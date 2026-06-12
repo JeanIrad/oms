@@ -1,0 +1,23 @@
+@host = http://localhost:4004
+
+
+GET {{host}}/oms/Products
+
+
+###
+POST {{host}}/oms/Orders
+Content-Type: application/json
+
+{
+    "customer_ID": "50ec7447-c6e4-4d92-a98d-511bdf345877",
+    "items": [
+        {
+            "product_ID": "1b9d8679-4386-438b-994f-a5135b3214f6",
+            "quantity": 2
+        },
+         {
+            "product_ID": "33022c0f-fd62-4f7e-a86f-8901582c1e20",
+            "quantity": 1
+        }
+    ]
+}
