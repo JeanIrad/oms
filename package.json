@@ -14,5 +14,46 @@
     "start": "cds-serve",
     "test": "jest"
   },
-  "private": true
+  "private": true,
+  "cds": {
+    "requires": {
+      "db": {
+        "[development]": {
+          "kind": "sqlite",
+          "credentials": {
+            "url": "db.sqlite"
+          }
+        },
+        "[production]": {
+          "kind": "hana"
+        }
+      },
+      "auth": {
+        "[development]": {
+          "kind": "mocked",
+          "users": {
+            "alice": {
+              "password": "alice",
+              "roles": [
+                "authenticated-user"
+              ]
+            },
+            "bob": {
+              "password": "bob",
+              "roles": [
+                "authenticated-user"
+              ]
+            },
+            "admin": {
+              "password": "admin",
+              "roles": [
+                "authenticated-user",
+                "admin"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
 }

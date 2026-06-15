@@ -3,20 +3,32 @@ using oms from '../db/schema';
 service OmsService @(path: '/oms') {
 
   entity Products  as projection on oms.Products;
+
+  @restrict: [{grant: '*', to: 'admin'}]
   entity Customers as projection on oms.Customers;
 
   @cds.redirection.target
+  @restrict: [{grant: '*', to: 'admin'}, {grant: ['CREATE', 'READ'], to: 'authenticated-user', where: 'createdBy = $user'}]
   entity Orders as projection on oms.Orders actions {
     action confirm() returns Orders;
     action cancel()  returns Orders;
   };
 
+@restrict: [
+    { grant: ['READ', 'CREATE', 'UPDATE', 'DELETE'], to: 'authenticated-user', where: 'createdBy = $user' },
+    { grant: '*', to: 'admin' }
+  ]
   entity OrderItems as projection on oms.OrderItems;
 
   @readonly
-  view OrderSummary as select from oms.Orders {
+  @restrict: [
+    { grant: 'READ', to: 'authenticated-user', where: 'createdBy = $user' },
+    { grant: '*', to: 'admin' }
+  ]
+  entity OrderSummary as select from oms.Orders {
      ID, status, totalPrice,
     customer.name as customerName,
-    createdAt
+    createdAt,
+    createdBy
   };
 }

@@ -4,8 +4,8 @@ using { cuid, managed, Currency } from '@sap/cds/common';
 entity Products : cuid, managed {
   name        : String(100) not null;
   description : String(500);
-  price       : Decimal(10,2) not null;
-  stock       : Integer       not null default 1;
+  price       : Decimal(10,2) not null @assert.range: [(0.001), _];
+  stock       : Integer       not null default 1 @assert.range: [(0), _] @assert.range.message: 'Stock cannot be less than zero!';
   category    : String(50);
 }
 
@@ -19,7 +19,7 @@ entity Customers : cuid, managed {
 
 entity Orders : cuid, managed {
   customer    : Association to Customers not null;
-  status      : OrderStatus;
+  status      : OrderStatus default 'PENDING';
   totalPrice : Decimal(10,2);
   notes       : String(500);
   items       : Composition of many OrderItems on items.order = $self;
@@ -34,5 +34,5 @@ entity OrderItems : cuid {
   currency: Currency          
 }
 
-
-type OrderStatus: String enum {Draft; Confirmed; Shipped; Cancelled}
+// type ProductCategory: String enum {}
+type OrderStatus: String enum {PENDING; CONFIRMED; SHIPPED; CANCELLED}
