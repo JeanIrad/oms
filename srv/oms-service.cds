@@ -7,15 +7,16 @@ service OmsService @(path: '/oms') {
   @restrict: [{grant: '*', to: 'admin'}]
   entity Customers as projection on oms.Customers;
 
+  // @odata.draft.enabled
   @cds.redirection.target
-  @restrict: [{grant: '*', to: 'admin'}, {grant: ['CREATE', 'READ'], to: 'authenticated-user', where: 'createdBy = $user'}]
+  @restrict: [{grant: '*', to: 'admin'}, {grant: ['CREATE', 'READ', 'cancel'], to: 'authenticated-user', where: 'createdBy = $user'}]
   entity Orders as projection on oms.Orders actions {
     action confirm() returns Orders;
     action cancel()  returns Orders;
   };
 
 @restrict: [
-    { grant: ['READ', 'CREATE', 'UPDATE', 'DELETE'], to: 'authenticated-user', where: 'createdBy = $user' },
+    { grant: ['READ', 'CREATE', 'UPDATE', 'DELETE'], to: 'authenticated-user' },
     { grant: '*', to: 'admin' }
   ]
   entity OrderItems as projection on oms.OrderItems;

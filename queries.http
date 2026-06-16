@@ -30,3 +30,16 @@ POST {{host}}/oms/Orders(9b6ad5cb-342a-4a55-a163-c3d08f478b08)/cancel
 
 ###
 GET {{host}}/oms/OrderSummary
+
+###
+POST {{host}}/oms/Products
+Content-Type: application/json
+Authorization: Basic alice:alice
+
+{
+    "name": "Radio",
+    "price": 412.98,
+    "stock": 140,
+    "category": "HUAWEI"
+
+}
