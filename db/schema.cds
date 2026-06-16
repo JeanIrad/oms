@@ -9,6 +9,8 @@ entity Products : cuid, managed {
   category    : String(50);
   stockCriticality  : Integer @Core.Computed: true;  
   statusCriticality : Integer @Core.Computed: true;
+  imageUrl: String(500);
+  imagePublicId: String(500);
 }
 
 entity Customers : cuid, managed {

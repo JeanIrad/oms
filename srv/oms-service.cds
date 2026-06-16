@@ -37,4 +37,10 @@ service OmsService @(path: '/oms') {
     createdAt,
     createdBy
   };
+
+@restrict: [{ grant: '*', to: 'admin' }]
+action uploadProductImage(productId: UUID,imageData: LargeString, fileName: String) returns { 
+  imageUrl: String;
+  imagePublicId: String
+}
 }

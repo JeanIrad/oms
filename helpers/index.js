@@ -1,4 +1,5 @@
 const cds = require('@sap/cds');
+const { deleteImage } = require('./cloudinary');
 
 const { Customers, Products, Orders, OrderItems } = cds.entities;
 
@@ -123,8 +124,6 @@ exports.handleDeleteOrderItem = async (req) => {
 };
 
 exports.handleAfterReadProducts = (products) => {
-  const { Customers } = cds.entities;
-  console.log('CDS ENTITES>>', Customers);
   const list = Array.isArray(products) ? products : [products];
   list.forEach((p) => {
     // Stock criticality — red below 10, orange below 50, green otherwise
@@ -163,4 +162,56 @@ exports.handleAfterCreateOrders = async (orders) => {
   console.log('After creating orders>>', orders);
   const ods = await SELECT.from(Orders);
   console.log('ORDERS RETRIEVED FROM DB>>', ods);
+};
+
+exports.handleUploadProductImage = async function (req) {
+  console.log('REQUEST DATA>>>>', req.data);
+  if (!req.user?.is('admin')) return req.reject(403, 'Admin access required.');
+  const { productId, imageData, fileName } = req.data;
+
+  if (!productId) return req.reject(400, 'productId is required.');
+  if (!imageData) return req.reject(400, 'imageData is required.');
+
+  if (!imageData.startsWith('data:image/')) {
+    return req.reject(
+      400,
+      'imageData must be a base64 data URI (data:image/...).',
+    );
+  }
+  const tx = cds.tx(req);
+  const product = await tx.run(
+    SELECT.one('oms.Products').where({ ID: productId }),
+  );
+
+  if (!product) return req.reject(404, `Product ${productId} not found.`);
+  if (product.imagePublicId) {
+    await deleteImage(product.imagePublicId);
+  }
+
+  const slug = (fileName || productId)
+    .replace(/\.[^/.]+$/, '')
+    .replace(/[^a-z0-9]/gi, '_')
+    .toLowerCase();
+
+  const { imageUrl, imagePublicId } = await uploadImage(imageData, slug);
+
+  await tx.run(
+    UPDATE('oms.Products')
+      .set({ imageUrl, imagePublicId })
+      .where({ ID: productId }),
+  );
+
+  return { imageUrl, imagePublicId };
+};
+
+exports.handleBeforeDeleteProduct = async (req) => {
+  if (!req.user?.is('admin')) return req.reject(403, 'Admin access required.');
+
+  const { ID } = req.params[0];
+  const tx = cds.tx(req);
+  const product = await tx.run(SELECT.one('oms.Products').where({ ID }));
+
+  if (product?.imagePublicId) {
+    await deleteImage(product.imagePublicId);
+  }
 };

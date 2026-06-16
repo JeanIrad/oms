@@ -72,13 +72,13 @@ annotate OmsService.Orders with @(
     { $Type: 'UI.DataField', Value: status,       Label: 'Status', Criticality: statusCriticality },
     {
       $Type:              'UI.DataFieldForAction',
-      Action:             'OmsService.EntityContainer/confirm',
+      Action:             'OmsService.Orders/confirm',
       Label:              'Confirm Order',
       InvocationGrouping: #Isolated
     },
     {
       $Type:              'UI.DataFieldForAction',
-      Action:             'OmsService.EntityContainer/cancel',
+      Action:             'OmsService.Orders/cancel',
       Label:              'Cancel Order',
       InvocationGrouping: #Isolated
     }
@@ -262,18 +262,30 @@ annotate OmsService.Products with {
   category    @title: 'Category';
 }
 
+annotate OmsService.Products with {
+  imageUrl @(
+    UI.IsImageURL: true,
+    title: 'Product Image',
+    Core.Computed: true
+  );
+  imagePublicId @UI.Hidden: true;
+}
+
+
 annotate OmsService.Products with @(
 
   UI.HeaderInfo: {
     TypeName:       'Product',
     TypeNamePlural: 'Products',
     Title:       { $Type: 'UI.DataField', Value: name     },
-    Description: { $Type: 'UI.DataField', Value: category }
+    Description: { $Type: 'UI.DataField', Value: category },
+    ImageUrl: imageUrl
   },
 
   UI.SelectionFields: [ category, price ],
 
   UI.LineItem: [
+      { $Type: 'UI.DataField', Value: imageUrl, Label: 'Image' },
     { $Type: 'UI.DataField', Value: name,     Label: 'Product Name' },
     { $Type: 'UI.DataField', Value: category, Label: 'Category'     },
     { $Type: 'UI.DataField', Value: price,    Label: 'Price'        },
@@ -289,6 +301,11 @@ annotate OmsService.Products with @(
         { $Type: 'UI.ReferenceFacet', Label: 'Basic Information', Target: '@UI.FieldGroup#ProductBasic'     },
         { $Type: 'UI.ReferenceFacet', Label: 'Inventory',         Target: '@UI.FieldGroup#ProductInventory' }
       ]
+    },
+      {
+      $Type: 'UI.ReferenceFacet',
+      Target: '@UI.FieldGroup#ImageUpload',
+      Label: 'Product Image',
     }
   ],
 
@@ -301,7 +318,11 @@ annotate OmsService.Products with @(
       { $Type: 'UI.DataField', Value: price,        Label: 'Price'        }
     ]
   },
-
+  UI.FieldGroup #ImageUpload: {
+    Data: [
+      { Value: imageUrl, Label: 'Image URL' },
+    ]
+  },
   UI.FieldGroup #ProductInventory: {
     $Type: 'UI.FieldGroupType',
     Data: [

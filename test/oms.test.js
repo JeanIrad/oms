@@ -701,4 +701,41 @@ describe('OrderItems', () => {
     const res = await deleteAs('alice', 'alice', `/oms/OrderItems(${itemId})`);
     expect(res.status).toBe(403);
   });
+
+  test('admin can upload a product image', async () => {
+    const fs = require('fs');
+    const path = require('path');
+    const imgPath = path.join(__dirname, 'fixtures', 'test-product.jpg');
+    const imgBuffer = fs.readFileSync(imgPath);
+    const base64 = `data:image/jpeg;base64,${imgBuffer.toString('base64')}`;
+
+    const res = await postAs('admin', 'admin', '/oms/uploadProductImage', {
+      productId: productId,
+      imageData: base64,
+      fileName: 'test-product.jpg',
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.imageUrl).toMatch(/^https:\/\/res\.cloudinary\.com/);
+    expect(body.imagePublicId).toContain('oms/products');
+
+    // Verify it was persisted to the product
+    const productRes = await getAs(
+      'admin',
+      'admin',
+      `/oms/Products(${productId})`,
+    );
+    const product = await productRes.json();
+    expect(product.imageUrl).toBe(body.imageUrl);
+  });
+
+  test('regular user cannot upload an image — 403', async () => {
+    const res = await postAs('alice', 'alice', '/oms/uploadProductImage', {
+      productId: productId,
+      imageData: 'data:image/jpeg;base64,/9j/fake',
+      fileName: 'fake.jpg',
+    });
+    expect(res.status).toBe(403);
+  });
 });
