@@ -691,7 +691,7 @@ describe('OrderItems', () => {
     expect(deleteRes.status).toBe(204);
   });
 
-  test('regular user can delete order items — 204', async () => {
+  test('regular user cannot delete order items — 403', async () => {
     const itemsRes = await getAs('alice', 'alice', '/oms/OrderItems?$top=1');
     const itemsBody = await itemsRes.json();
     const itemId = itemsBody.value[0]?.ID;
@@ -699,6 +699,6 @@ describe('OrderItems', () => {
     if (!itemId) return; // skip if alice has no items yet
 
     const res = await deleteAs('alice', 'alice', `/oms/OrderItems(${itemId})`);
-    expect(res.status).toBe(204);
+    expect(res.status).toBe(403);
   });
 });
