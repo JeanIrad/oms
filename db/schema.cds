@@ -7,6 +7,8 @@ entity Products : cuid, managed {
   price       : Decimal(10,2) not null @assert.range: [(0.001), _];
   stock       : Integer       not null default 1 @assert.range: [(0), _] @assert.range.message: 'Stock cannot be less than zero!';
   category    : String(50);
+  stockCriticality  : Integer @Core.Computed: true;  
+  statusCriticality : Integer @Core.Computed: true;
 }
 
 entity Customers : cuid, managed {
@@ -15,6 +17,8 @@ entity Customers : cuid, managed {
   phone   : String(20);
   address : String(300);
   status  : String(20)  default 'Active';
+  statusCriticality : Integer @Core.Computed: true;
+
 }
 
 entity Orders : cuid, managed {
@@ -23,6 +27,8 @@ entity Orders : cuid, managed {
   totalPrice : Decimal(10,2);
   notes       : String(500);
   items       : Composition of many OrderItems on items.order = $self;
+  statusCriticality : Integer @Core.Computed: true;
+
 }
 
 entity OrderItems : cuid {

@@ -2,12 +2,17 @@ using oms from '../db/schema';
 
 service OmsService @(path: '/oms') {
 
+@odata.draft.enabled
+  @restrict: [
+    { grant: ['READ', 'CREATE', 'UPDATE'], to: 'authenticated-user' },
+    { grant: '*', to: 'admin' }
+  ]
   entity Products  as projection on oms.Products;
 
-  @restrict: [{grant: '*', to: 'admin'}]
+  @restrict: [{grant: '*', to: 'admin'},{grant: 'READ', to: 'authenticated-user'}]
   entity Customers as projection on oms.Customers;
 
-  // @odata.draft.enabled
+  @odata.draft.enabled
   @cds.redirection.target
   @restrict: [{grant: '*', to: 'admin'}, {grant: ['CREATE', 'READ', 'cancel'], to: 'authenticated-user', where: 'createdBy = $user'}]
   entity Orders as projection on oms.Orders actions {

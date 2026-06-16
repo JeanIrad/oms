@@ -1,3 +1,3 @@
-name,email,phone,address,status
-Amara Diallo,amara@example.com,+250 788 001 001,Kigali Rwanda,Active
-Jean-Pierre Habimana,jp@example.com,+250 788 002 002,Kigali Rwanda,Active
+name,email,phone,address,status,createdBy
+Amara Diallo,amara@example.com,+250 788 001 001,Kigali Rwanda,Active,admin
+Jean-Pierre Habimana,jp@example.com,+250 788 002 002,Kigali Rwanda,Active,admin

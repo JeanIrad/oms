@@ -4,24 +4,26 @@ const { Customers, Products, Orders, OrderItems } = cds.entities;
 
 exports.onlyAdmin = async function (req) {
   if (!req.user?.is('admin')) return req.reject(403);
+  req.notify('Product created successfully!');
 };
 
-exports.createOrders = async function (req) {
+exports.handleBeforeCreateOrders = async function (req) {
+  console.log('CDS ENTITIES>>>', cds.entities);
   const order = req.data;
   const items = order.items;
   const { id: userId } = req.user;
-  req.data.customer_ID = userId;
   if (!items || items.length === 0) {
     return req.reject(400, 'An order must contain at least one item.');
   }
-
+  console.log('ON CREATE STARTS');
   let total = 0;
   const transaction = cds.transaction(req);
   const customer = await transaction.run(
-    SELECT.one.from(Customers).where({ ID: userId }),
+    SELECT.one.from(Customers).where({ ID: order?.customer_ID }),
   );
+  // req.data.customer_ID = userId;
 
-  // if (!customer) return req.reject(404, 'Customer not found!');
+  if (!customer) return req.reject(400, 'Customer not found!');
   for (const item of items) {
     if (!Number.isInteger(item.quantity) || item.quantity <= 0)
       return req.reject(400, 'Please provide quantity for each product!');
@@ -43,7 +45,7 @@ exports.createOrders = async function (req) {
       );
     }
     await transaction.run(
-      UPDATE('oms.Products')
+      UPDATE(Products)
         .set({ stock: product.stock - item.quantity })
         .where({ ID: item.product_ID }),
     );
@@ -118,4 +120,47 @@ exports.isAuthenticated = async (req) => {
 
 exports.handleDeleteOrderItem = async (req) => {
   if (!req.user.is('admin')) return req.reject(403);
+};
+
+exports.handleAfterReadProducts = (products) => {
+  const { Customers } = cds.entities;
+  console.log('CDS ENTITES>>', Customers);
+  const list = Array.isArray(products) ? products : [products];
+  list.forEach((p) => {
+    // Stock criticality — red below 10, orange below 50, green otherwise
+    p.stockCriticality = p.stock <= 0 ? 1 : p.stock <= 10 ? 2 : 3;
+
+    // Status criticality
+    p.statusCriticality =
+      p.status === 'Active' ? 3 : p.status === 'Inactive' ? 1 : 0;
+  });
+};
+
+exports.handleAfterReadOrders = (orders) => {
+  console.log('ORDERS>>>', orders);
+  const list = Array.isArray(orders) ? orders : [orders];
+  list.forEach((o) => {
+    o.statusCriticality =
+      o.status === 'CONFIRMED'
+        ? 3
+        : o.status === 'PENDING'
+          ? 5
+          : o.status === 'SHIPPED'
+            ? 3
+            : o.status === 'CANCELLED'
+              ? 1
+              : 0;
+  });
+};
+exports.handleAfterReadCustomers = (customers) => {
+  const list = Array.isArray(customers) ? customers : [customers];
+  list.forEach((c) => {
+    c.statusCriticality = c.status === 'Active' ? 3 : 1;
+  });
+};
+
+exports.handleAfterCreateOrders = async (orders) => {
+  console.log('After creating orders>>', orders);
+  const ods = await SELECT.from(Orders);
+  console.log('ORDERS RETRIEVED FROM DB>>', ods);
 };

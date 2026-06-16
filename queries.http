@@ -6,16 +6,20 @@ GET {{host}}/oms/Products?$orderby=ID
 
 
 ###
-GET {{host}}/oms/Customers?$orderby=ID&$select=modifiedBy, createdBy###
+GET {{host}}/oms/Customers?$orderby=ID&$select=modifiedBy, createdBy
+Authorization: Basic admin:admin
+
+###
 POST {{host}}/oms/Orders
 Content-Type: application/json
+Authorization: Basic admin:admin
 
 {
     "customer_ID": "195229a4-7783-4ce0-839d-f576e1813230",
     "items": [
         {
-            "product_ID": "966a53ac-1379-4a97-b119-3b6da2c49f8b",
-            "quantity": 1
+            "product_ID": "4f112801-8b66-410a-a595-0f964ba2f14f",
+            "quantity": 10
         } 
     ]
 }
@@ -23,7 +27,7 @@ Content-Type: application/json
 ###
 
 GET {{host}}/oms/Orders?$count=true
-
+Authorization: Basic admin:admin
 
 ###
 POST {{host}}/oms/Orders(9b6ad5cb-342a-4a55-a163-c3d08f478b08)/cancel

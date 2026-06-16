@@ -1,5 +1,5 @@
-name,description,price,stock,category
-Laptop Pro 15,High-performance laptop,1299.99,50,Electronics
-Wireless Mouse,Ergonomic wireless mouse,29.99,200,Accessories
-USB-C Hub,7-port USB-C hub,49.99,150,Accessories
-Monitor 27inch,4K IPS display,399.99,30,Electronics
+name,description,price,stock,category,createdBy
+Laptop Pro 15,High-performance laptop,1299.99,50,Electronics,admin
+Wireless Mouse,Ergonomic wireless mouse,29.99,200,Accessories,admin
+USB-C Hub,7-port USB-C hub,49.99,150,Accessories,admin
+Monitor 27inch,4K IPS display,399.99,30,Electronics,admin
