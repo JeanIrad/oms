@@ -4,8 +4,7 @@ const { deleteImage, uploadImage } = require('../helpers/cloudinary');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-cds.on('served', () => {
-  const app = cds.app;
+cds.on('bootstrap', (app) => {
   app.post(
     '/oms/uploadProductImage',
     upload.single('image'),

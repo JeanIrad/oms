@@ -16,8 +16,6 @@ const {
 
 module.exports = class OmsService extends cds.ApplicationService {
   async init() {
-    const { Products, Orders, OrderItems, Customers } = this.entities;
-
     this.before(['CREATE', 'UPDATE'], 'Products', onlyAdmin);
     this.before('READ', 'OrderSummary', isAuthenticated);
     this.before('DELETE', 'OrderItems', handleDeleteOrderItem);
@@ -27,7 +25,7 @@ module.exports = class OmsService extends cds.ApplicationService {
 
     this.on('confirm', 'Orders', confirmOrders);
     this.on('cancel', 'Orders', cancelOrders);
-    this.on('uploadImage', handleUploadProductImage);
+    // this.on('uploadImage', handleUploadProductImage);
 
     this.after('READ', 'Products', handleAfterReadProducts);
     this.after('READ', 'Orders', handleAfterReadOrders);
