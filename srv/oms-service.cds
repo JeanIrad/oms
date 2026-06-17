@@ -2,9 +2,9 @@ using oms from '../db/schema';
 
 service OmsService @(path: '/oms') {
 
-@odata.draft.enabled
+// @odata.draft.enabled
   @restrict: [
-    { grant: ['READ', 'CREATE', 'UPDATE'], to: 'authenticated-user' },
+    { grant: 'READ', to: 'authenticated-user' },
     { grant: '*', to: 'admin' }
   ]
   entity Products  as projection on oms.Products;
@@ -21,7 +21,7 @@ service OmsService @(path: '/oms') {
   };
 
 @restrict: [
-    { grant: ['READ', 'CREATE', 'UPDATE', 'DELETE'], to: 'authenticated-user' },
+    { grant: 'READ', to: 'authenticated-user', where: 'createdBy = $user' },
     { grant: '*', to: 'admin' }
   ]
   entity OrderItems as projection on oms.OrderItems;
@@ -43,4 +43,5 @@ action uploadProductImage(productId: UUID,imageData: LargeString, fileName: Stri
   imageUrl: String;
   imagePublicId: String
 }
+
 }

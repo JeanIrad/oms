@@ -1,5 +1,5 @@
 const cds = require('@sap/cds');
-const { deleteImage } = require('./cloudinary');
+const { deleteImage, uploadStream } = require('./cloudinary');
 
 const { Customers, Products, Orders, OrderItems } = cds.entities;
 
@@ -116,7 +116,11 @@ exports.cancelOrders = async (req) => {
 };
 
 exports.isAuthenticated = async (req) => {
+  console.log('Ordersummary reading.....');
   if (!req.user?.id) return req.reject(401);
+  const orders = await SELECT.from(Orders);
+  console.log('Orders retrieved>>', orders);
+  if (!Array.isArray(orders) || !orders) return req.error('No order found yet');
 };
 
 exports.handleDeleteOrderItem = async (req) => {
@@ -167,41 +171,39 @@ exports.handleAfterCreateOrders = async (orders) => {
 exports.handleUploadProductImage = async function (req) {
   console.log('REQUEST DATA>>>>', req.data);
   if (!req.user?.is('admin')) return req.reject(403, 'Admin access required.');
-  const { productId, imageData, fileName } = req.data;
+  const { ID } = req.params[0];
 
-  if (!productId) return req.reject(400, 'productId is required.');
-  if (!imageData) return req.reject(400, 'imageData is required.');
-
-  if (!imageData.startsWith('data:image/')) {
-    return req.reject(
-      400,
-      'imageData must be a base64 data URI (data:image/...).',
-    );
-  }
   const tx = cds.tx(req);
-  const product = await tx.run(
-    SELECT.one('oms.Products').where({ ID: productId }),
-  );
+  const product = await tx.run(SELECT.one('oms.Products').where({ ID }));
 
   if (!product) return req.reject(404, `Product ${productId} not found.`);
   if (product.imagePublicId) {
     await deleteImage(product.imagePublicId);
   }
 
-  const slug = (fileName || productId)
-    .replace(/\.[^/.]+$/, '')
-    .replace(/[^a-z0-9]/gi, '_')
-    .toLowerCase();
+  const slug = `product_${ID}`.toLowerCase();
 
-  const { imageUrl, imagePublicId } = await uploadImage(imageData, slug);
+  try {
+    const { imageUrl, imagePublicId } = await uploadStream(req.data, slug);
+    console.log('imageUrl>>>', imageUrl);
+    await tx.run(
+      UPDATE('oms.Products').set({ imageUrl, imagePublicId }).where({ ID }),
+    );
+  } catch (err) {
+    req.reject(502, `Image upload failed ${err.message}`);
+  }
+};
 
-  await tx.run(
-    UPDATE('oms.Products')
-      .set({ imageUrl, imagePublicId })
-      .where({ ID: productId }),
-  );
+exports.handleImageRead = async (req) => {
+  const { ID } = req.params[0];
+  const product = await SELECT.one('oms.Products').where({ ID });
 
-  return { imageUrl, imagePublicId };
+  if (!product?.imageUrl) {
+    return req.reject(404, 'No image found for this product.');
+  }
+
+  // Redirect the OData media GET to the Cloudinary CDN URL
+  req.res.redirect(302, product.imageUrl);
 };
 
 exports.handleBeforeDeleteProduct = async (req) => {

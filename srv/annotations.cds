@@ -260,17 +260,13 @@ annotate OmsService.Products with {
   price       @title: 'Price'       @Measures.ISOCurrency: 'USD';
   stock       @title: 'Stock';
   category    @title: 'Category';
-}
-
-annotate OmsService.Products with {
   imageUrl @(
     UI.IsImageURL: true,
     title: 'Product Image',
-    Core.Computed: true
+    Core.Computed: true  
   );
   imagePublicId @UI.Hidden: true;
 }
-
 
 annotate OmsService.Products with @(
 
@@ -285,7 +281,7 @@ annotate OmsService.Products with @(
   UI.SelectionFields: [ category, price ],
 
   UI.LineItem: [
-      { $Type: 'UI.DataField', Value: imageUrl, Label: 'Image' },
+    { $Type: 'UI.DataField', Value: imageUrl,  Label: 'Product Image' },
     { $Type: 'UI.DataField', Value: name,     Label: 'Product Name' },
     { $Type: 'UI.DataField', Value: category, Label: 'Category'     },
     { $Type: 'UI.DataField', Value: price,    Label: 'Price'        },
@@ -318,19 +314,36 @@ annotate OmsService.Products with @(
       { $Type: 'UI.DataField', Value: price,        Label: 'Price'        }
     ]
   },
-  UI.FieldGroup #ImageUpload: {
-    Data: [
-      { Value: imageUrl, Label: 'Image URL' },
-    ]
-  },
+  // UI.FieldGroup #ImageUpload: {
+  //   Data: [
+  //     { Value: imageUrl, Label: 'Image URL' },
+  //   ]
+  // },
   UI.FieldGroup #ProductInventory: {
     $Type: 'UI.FieldGroupType',
     Data: [
       { $Type: 'UI.DataField', Value: stock, Label: 'Units in Stock', Criticality: stockCriticality }
     ]
-  }
+  },
+  UI.FieldGroup #ImageUpload: {
+  $Type: 'UI.FieldGroupType',
+  Data: [
+    { $Type: 'UI.DataField', Value: imageUrl, Label: 'Product Image' },
+    {
+      $Type:  'UI.DataFieldForAction',
+      Action: 'OmsService.uploadProductImage',
+      Label:  'Upload Image'
+    }
+  ]
+}
+
+
 );
 
+annotate OmsService.Products with @(
+  UI.CreateHidden: false,
+  UI.DeleteHidden: false   
+);
 // ─────────────────────────────────────────────────────────────────────────────
 // CUSTOMERS
 // ─────────────────────────────────────────────────────────────────────────────

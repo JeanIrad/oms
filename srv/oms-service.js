@@ -12,6 +12,7 @@ const {
   handleAfterCreateOrders,
   handleUploadProductImage,
   handleBeforeDeleteProduct,
+  handleImageRead,
 } = require('../helpers');
 
 module.exports = class OmsService extends cds.ApplicationService {
@@ -27,7 +28,9 @@ module.exports = class OmsService extends cds.ApplicationService {
 
     this.on('confirm', 'Orders', confirmOrders);
     this.on('cancel', 'Orders', cancelOrders);
-    this.on('uploadImage', handleUploadProductImage);
+    this.on('uploadProductImage', handleUploadProductImage);
+    // this.on('PUT', 'Products/image', handleUploadProductImage);
+    this.on('READ', 'Products/image', handleImageRead);
 
     this.after('READ', 'Products', handleAfterReadProducts);
     this.after('READ', 'Orders', handleAfterReadOrders);

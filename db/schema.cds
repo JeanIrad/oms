@@ -7,6 +7,7 @@ entity Products : cuid, managed {
   price       : Decimal(10,2) not null @assert.range: [(0.001), _];
   stock       : Integer       not null default 1 @assert.range: [(0), _] @assert.range.message: 'Stock cannot be less than zero!';
   category    : String(50);
+  status      : String;
   stockCriticality  : Integer @Core.Computed: true;  
   statusCriticality : Integer @Core.Computed: true;
   imageUrl: String(500);
@@ -33,7 +34,7 @@ entity Orders : cuid, managed {
 
 }
 
-entity OrderItems : cuid {
+entity OrderItems : cuid, managed {
   order      : Association to Orders  not null;
   product    : Association to Products not null;
   quantity   : Integer     not null;

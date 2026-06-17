@@ -9,6 +9,29 @@ cloudinary.config({
   secure: true,
 });
 
+async function uploadStream(readableStream, publicId) {
+  console.log('PUBLIC ID>>>', publicId);
+  return new Promise((resolve, reject) => {
+    const uploadStreamHandle = cloudinary.uploader.upload_stream(
+      {
+        folder: 'oms/products',
+        public_id: publicId,
+        overwrite: true,
+        resource_type: 'image',
+        transformation: [
+          { width: 800, height: 800, crop: 'limit' },
+          { quality: 'auto', fetch_format: 'auto' },
+        ],
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      },
+    );
+    readableStream.pipe(uploadStreamHandle);
+  });
+}
+
 /**
  * Upload a base64 image to Cloudinary
  * @param {string} base64Data
@@ -38,4 +61,4 @@ async function deleteImage(publicId) {
   await cloudinary.uploader.destroy(publicId);
 }
 
-module.exports = { deleteImage, uploadImage };
+module.exports = { deleteImage, uploadImage, uploadStream };
