@@ -11,11 +11,15 @@
     "@cap-js/cds-test": "^1.0.1",
     "@cap-js/sqlite": "^2.4",
     "@faker-js/faker": "^10.4.0",
-    "jest": "^30.4.2"
+    "jest": "^30.4.2",
+    "cds-plugin-ui5": "^0.17.0"
   },
   "scripts": {
     "start": "cds-serve",
-    "test": "jest"
+    "test": "jest",
+    "watch-orders": "cds watch --open oms.orders/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-customers": "cds watch --open oms.customers/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-products": "cds watch --open products/index.html?sap-ui-xx-viewCache=false --livereload false"
   },
   "private": true,
   "cds": {
@@ -58,5 +62,13 @@
         }
       }
     }
-  }
+  },
+  "workspaces": [
+    "app/*"
+  ],
+  "sapux": [
+    "app/orders",
+    "app/customers",
+    "app/products"
+  ]
 }

@@ -3,13 +3,29 @@ const { deleteImage } = require('./cloudinary');
 
 const { Customers, Products, Orders, OrderItems } = cds.entities;
 
+const statusCriticalityHelper = (rows) => {
+  console.log('ROWS>>', rows);
+  const list = Array.isArray(rows) ? rows : [rows];
+  list.forEach((r) => {
+    r.statusCriticality =
+      r.status === 'CONFIRMED'
+        ? 3
+        : r.status === 'PENDING'
+          ? 5
+          : r.status === 'SHIPPED'
+            ? 3
+            : r.status === 'CANCELLED'
+              ? 1
+              : 0;
+  });
+};
+
 exports.onlyAdmin = async function (req) {
   if (!req.user?.is('admin')) return req.reject(403);
   req.notify('Product created successfully!');
 };
 
 exports.handleBeforeCreateOrders = async function (req) {
-  console.log('CDS ENTITIES>>>', cds.entities);
   const order = req.data;
   const items = order.items;
   const { id: userId } = req.user;
@@ -34,8 +50,11 @@ exports.handleBeforeCreateOrders = async function (req) {
       }),
     );
 
-    if (!product) {
-      return req.reject(404, `Product  not found.`);
+    if (!product || product.stock <= 0) {
+      return req.reject(
+        404,
+        `Product ${product?.name ?? 'NO PRODUCT'} not in stock`,
+      );
     }
 
     if (product.stock < item.quantity) {
@@ -58,9 +77,11 @@ exports.handleBeforeCreateOrders = async function (req) {
   order.totalPrice = parseFloat(total.toFixed(2));
   // order.createdBy = customer.name;
   // order.modifiedBy = customer.name;
+  return req.notify('Order created successfully');
 };
 
 exports.confirmOrders = async function (req) {
+  console.log('CONFIRMING ORDERS....');
   const { ID } = req.params[0];
   if (!req.user.is('admin')) {
     return req.reject(403, 'Only admins can confirm orders.');
@@ -81,7 +102,12 @@ exports.confirmOrders = async function (req) {
 };
 
 exports.cancelOrders = async (req) => {
+  console.log('CANCELLING ORDER...');
   const { ID } = req.params[0];
+  const { reason } = req.data;
+  if (!reason || reason.trim().length === 0) {
+    return req.reject(400, 'A cancellation reason is required.');
+  }
   const { id: customerId } = req.user;
   // if (!customerId) return req.reject(401);
   const customer = await SELECT.one(Customers).where({ ID: customerId });
@@ -111,7 +137,9 @@ exports.cancelOrders = async (req) => {
       .where({ ID: item.product_ID });
   }
 
-  await UPDATE(Orders).set({ status: 'CANCELLED' }).where({ ID });
+  await UPDATE(Orders)
+    .set({ status: 'CANCELLED', cancellationReason: reason.trim() })
+    .where({ ID });
   return SELECT.one(Orders).where({ ID });
 };
 
@@ -136,20 +164,8 @@ exports.handleAfterReadProducts = (products) => {
 };
 
 exports.handleAfterReadOrders = (orders) => {
-  console.log('ORDERS>>>', orders);
-  const list = Array.isArray(orders) ? orders : [orders];
-  list.forEach((o) => {
-    o.statusCriticality =
-      o.status === 'CONFIRMED'
-        ? 3
-        : o.status === 'PENDING'
-          ? 5
-          : o.status === 'SHIPPED'
-            ? 3
-            : o.status === 'CANCELLED'
-              ? 1
-              : 0;
-  });
+  console.log('orders', orders);
+  statusCriticalityHelper(orders);
 };
 exports.handleAfterReadCustomers = (customers) => {
   const list = Array.isArray(customers) ? customers : [customers];
@@ -159,7 +175,6 @@ exports.handleAfterReadCustomers = (customers) => {
 };
 
 exports.handleAfterCreateOrders = async (orders) => {
-  console.log('After creating orders>>', orders);
   const ods = await SELECT.from(Orders);
   console.log('ORDERS RETRIEVED FROM DB>>', ods);
 };
@@ -214,4 +229,41 @@ exports.handleBeforeDeleteProduct = async (req) => {
   if (product?.imagePublicId) {
     await deleteImage(product.imagePublicId);
   }
+};
+
+exports.handleAfterReadOrderSummary = (rows) => {
+  statusCriticalityHelper(rows);
+};
+
+exports.handleBeforeUpdateOrders = async (req) => {
+  const { ID } = req.params[0];
+
+  const order = await SELECT.one(Orders).where({ ID });
+  if (!order) return req.reject(404, 'Order not found!');
+  if (['CANCELLED', 'SHIPPED'].includes(order.status.toUpperCase()))
+    return req.reject(
+      409,
+      `Cannot update this order with status: ${order.status}.`,
+    );
+  return req.notify('Order updated successfully');
+};
+
+exports.shipOrders = async (req) => {
+  if (!req.user.is('admin')) {
+    return req.reject(403, 'Only admins can mark orders as shipped.');
+  }
+
+  const { ID } = req.params[0];
+  const order = await SELECT.one('oms.Orders').where({ ID });
+
+  if (!order) return req.reject(404, 'Order not found.');
+  if (order.status !== 'CONFIRMED') {
+    return req.reject(
+      409,
+      `Cannot ship an order in status "${order.status}". Order must be Confirmed first.`,
+    );
+  }
+
+  await UPDATE('oms.Orders').set({ status: 'SHIPPED' }).where({ ID });
+  return SELECT.one('oms.Orders').where({ ID });
 };

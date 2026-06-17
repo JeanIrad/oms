@@ -30,7 +30,7 @@ entity Orders : cuid, managed {
   notes       : String(500);
   items       : Composition of many OrderItems on items.order = $self;
   statusCriticality : Integer @Core.Computed: true;
-
+cancellationReason: String(500);
 }
 
 entity OrderItems : cuid {

@@ -2,6 +2,11 @@
 
 
 GET {{host}}/oms/Products?$orderby=ID
+Authorization: Basic admin:admin
+
+###
+PUT {{host}}/oms/Products(8e3cbbb9-be8b-4826-8b7e-0bb663ccc515)/image
+Content-Type: file.type
 
 
 
@@ -26,7 +31,7 @@ Authorization: Basic admin:admin
 
 ###
 
-GET {{host}}/oms/Orders?$count=true
+GET {{host}}/oms/Orders?$count=true&$expand=items
 Authorization: Basic admin:admin
 
 ###
@@ -47,3 +52,6 @@ Authorization: Basic alice:alice
     "category": "HUAWEI"
 
 }
+
+###
+GET {{host}}/oms/$metadata

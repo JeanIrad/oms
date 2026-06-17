@@ -1,8 +1,6 @@
 using OmsService from '../srv/oms-service';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ORDERS — field-level annotations
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 annotate OmsService.Orders with {
   ID         @title: 'Order ID'       @Core.Computed: true @UI.Hidden: true;
@@ -50,9 +48,6 @@ annotate OmsService.Orders with {
   customer_ID @UI.Hidden: true;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ORDERS — UI layout annotations
-// ─────────────────────────────────────────────────────────────────────────────
 
 annotate OmsService.Orders with @(
 
@@ -72,16 +67,24 @@ annotate OmsService.Orders with @(
     { $Type: 'UI.DataField', Value: status,       Label: 'Status', Criticality: statusCriticality },
     {
       $Type:              'UI.DataFieldForAction',
-      Action:             'OmsService.Orders/confirm',
+      Action:             'OmsService.confirm',
       Label:              'Confirm Order',
+
       InvocationGrouping: #Isolated
     },
     {
       $Type:              'UI.DataFieldForAction',
-      Action:             'OmsService.Orders/cancel',
+      Action:             'OmsService.cancel',
       Label:              'Cancel Order',
-      InvocationGrouping: #Isolated
-    }
+      InvocationGrouping: #Isolated,
+      Determining: false
+    },
+    {
+  $Type:              'UI.DataFieldForAction',
+  Action:             'OmsService.ship',
+  Label:              'Mark as Shipped',
+  InvocationGrouping: #Isolated
+},
   ],
 
   UI.PresentationVariant: {
@@ -125,6 +128,7 @@ annotate OmsService.Orders with @(
       // customer.email is a read-only nav-property — shown after selection
       { $Type: 'UI.DataField', Value: customer.email, Label: 'Customer Email' },
       { $Type: 'UI.DataField', Value: status,         Label: 'Status',   Criticality: statusCriticality },
+      { $Type: 'UI.DataField', Value: cancellationReason, Label: 'Cancel Reason' },
       { $Type: 'UI.DataField', Value: totalPrice,     Label: 'Total Price' }
     ]
   },
@@ -145,6 +149,25 @@ annotate OmsService.Orders with @(
     ]
   }
 );
+
+annotate OmsService.ship with @(
+  Core.OperationAvailable: canShip   
+);
+
+annotate OmsService.cancel with @(
+  Core.OperationAvailable: canCancel,
+  Common.IsActionCritical: true   
+);
+
+// annotate OmsService.Orders actions {
+//   cancel @(
+//     Common.IsActionCritical: true,
+//     Core.OperationAvailable: canCancel
+//   );
+//   ship @(
+//     Core.OperationAvailable: canShip
+//   );
+// };
 
 annotate OmsService.Orders with @(
   UI.CreateHidden: false,
@@ -273,6 +296,9 @@ annotate OmsService.Products with {
 
 
 annotate OmsService.Products with @(
+  UI.CreateHidden: false,
+  UI.DeleteHidden: false,
+  UI.UpdateHidden: false,
 
   UI.HeaderInfo: {
     TypeName:       'Product',
@@ -344,6 +370,8 @@ annotate OmsService.Customers with {
 }
 
 annotate OmsService.Customers with @(
+  UI.CreateHidden: false,
+  UI.DeleteHidden: false,
 
   UI.HeaderInfo: {
     TypeName:       'Customer',
@@ -376,3 +404,339 @@ annotate OmsService.Customers with @(
     ]
   }
 );
+
+// OrderSummary
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ORDER SUMMARY — analytical entity
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 1. Field-level analytics role declarations
+annotate OmsService.OrderSummary with {
+  totalPrice @(
+    Analytics.Measure:    true,
+    Aggregation.default:  #SUM,
+    title:                'Revenue',
+    Measures.ISOCurrency: 'USD'
+  );
+  orderCount @(
+    Analytics.Measure:   true,
+    Aggregation.default: #SUM,
+    title:               'Order Count'
+  );
+  status @(
+    Analytics.Dimension: true,
+    title: 'Status'
+  );
+  customerName @(
+    Analytics.Dimension: true,
+    title: 'Customer'
+  );
+  createdAt @(
+    Analytics.Dimension: true,
+    title: 'Order Date'
+  );
+}
+
+// 2. Aggregation capability — REQUIRED for CAP to advertise $apply support.
+//    Without this Fiori treats the entity as a plain read-only list.
+annotate OmsService.OrderSummary with @(
+  Aggregation.ApplySupported: {
+    $Type:           'Aggregation.ApplySupportedType',
+    Transformations: [ 'aggregate', 'groupby', 'filter' ],
+    GroupableProperties: [ status, customerName, createdAt ],
+    AggregatableProperties: [
+      { $Type: 'Aggregation.AggregatablePropertyType', Property: totalPrice },
+      { $Type: 'Aggregation.AggregatablePropertyType', Property: orderCount }
+    ]
+  }
+);
+
+// 3. DataPoints — MUST be separate named annotations; UI.KPI references them
+//    by path string, NOT by inline object.
+annotate OmsService.OrderSummary with @(
+  UI.DataPoint #TotalRevenue: {
+    $Type: 'UI.DataPointType',
+    Value: totalPrice,
+    Title: 'Total Revenue'
+  },
+  UI.DataPoint #OrderCount: {
+    $Type: 'UI.DataPointType',
+    Value: orderCount,
+    Title: 'Total Orders'
+  }
+);
+
+// 4. KPI tiles — DataPoint must be a path reference, not an inline definition.
+annotate OmsService.OrderSummary with @(
+  UI.KPI #TotalRevenue: {
+    $Type:            'UI.KPIType',
+    DataPoint:        '@UI.DataPoint#TotalRevenue',
+    SelectionVariant: {
+      $Type:         'UI.SelectionVariantType',
+      SelectOptions: []
+    }
+  },
+  UI.KPI #OrderCount: {
+    $Type:            'UI.KPIType',
+    DataPoint:        '@UI.DataPoint#OrderCount',
+    SelectionVariant: {
+      $Type:         'UI.SelectionVariantType',
+      SelectOptions: []
+    }
+  }
+);
+
+// 5. Chart
+annotate OmsService.OrderSummary with @(
+  UI.Chart #RevenueByStatus: {
+    $Type:     'UI.ChartDefinitionType',
+    ChartType: #Column,
+    Title:     'Revenue by Status',
+    Measures:  [ totalPrice ],
+    MeasureAttributes: [{
+      $Type:     'UI.ChartMeasureAttributeType',
+      Measure:   totalPrice,
+      Role:      #Axis1,
+      DataPoint: '@UI.DataPoint#TotalRevenue'
+    }],
+    Dimensions: [ status ],
+    DimensionAttributes: [{
+      $Type:     'UI.ChartDimensionAttributeType',
+      Dimension: status,
+      Role:      #Category
+    }]
+  },
+
+  UI.Chart #OrdersByCustomer: {
+    $Type:     'UI.ChartDefinitionType',
+    ChartType: #Bar,
+    Title:     'Orders by Customer',
+    Measures:  [ orderCount ],
+    MeasureAttributes: [{
+      $Type:     'UI.ChartMeasureAttributeType',
+      Measure:   orderCount,
+      Role:      #Axis1,
+      DataPoint: '@UI.DataPoint#OrderCount'
+    }],
+    Dimensions: [ customerName ],
+    DimensionAttributes: [{
+      $Type:     'UI.ChartDimensionAttributeType',
+      Dimension: customerName,
+      Role:      #Category
+    }]
+  }
+);
+
+// 6. Selection fields
+annotate OmsService.OrderSummary with @(
+  UI.SelectionFields: [ status, customerName, createdAt ]
+);
+
+// 7. Table (drill-down list)
+annotate OmsService.OrderSummary with @(
+  UI.LineItem: [
+    { $Type: 'UI.DataField', Value: customerName, Label: 'Customer'    },
+    { $Type: 'UI.DataField', Value: createdAt,    Label: 'Order Date'  },
+    { $Type: 'UI.DataField', Value: totalPrice,   Label: 'Revenue'     },
+    { $Type: 'UI.DataField', Value: orderCount,   Label: 'Order Count' },
+    { $Type: 'UI.DataField', Value: status, Label: 'Status' }
+  ],
+  UI.HeaderInfo: {
+    TypeName:       'Order Summary',
+    TypeNamePlural: 'Order Summaries',
+    Title: { $Type: 'UI.DataField', Value: customerName }
+  }
+);
+
+// 8. Presentation & SelectionPresentation variants.
+//    The SelectionPresentationVariant is the entry point Fiori uses on an
+//    Analytical List Page — both the chart and the table must appear here.
+annotate OmsService.OrderSummary with @(
+  UI.PresentationVariant: {
+    $Type:          'UI.PresentationVariantType',
+    Visualizations: [ '@UI.Chart#RevenueByStatus', '@UI.LineItem' ],
+    SortOrder: [{ $Type: 'Common.SortOrderType', Property: totalPrice, Descending: true }],
+    RequestAtLeast: [ totalPrice, orderCount, status ]
+  },
+
+  UI.SelectionPresentationVariant #Default: {
+    $Type: 'UI.SelectionPresentationVariantType',
+    Text:  'Default',
+    SelectionVariant: {
+      $Type:         'UI.SelectionVariantType',
+      SelectOptions: []
+    },
+    PresentationVariant: {
+      $Type:          'UI.PresentationVariantType',
+      Visualizations: [ '@UI.Chart#RevenueByStatus', '@UI.LineItem' ],
+      SortOrder: [{ $Type: 'Common.SortOrderType', Property: totalPrice, Descending: true }],
+      RequestAtLeast: [ totalPrice, orderCount, status ]
+    }
+  }
+);
+
+
+// annotate OmsService.OrderSummary with {
+//   totalPrice @(
+//     Analytics.Measure:    true,
+//     Aggregation.default:  #SUM,
+//     title:                'Revenue',
+//     Measures.ISOCurrency: 'USD'
+//   );
+//   orderCount @(
+//     Analytics.Measure:   true,
+//     Aggregation.default: #SUM,
+//     title:               'Order Count'
+//   );
+//   status @(
+//     Analytics.Dimension: true,
+//     title: 'Status'
+//   );
+//   customerName @(
+//     Analytics.Dimension: true,
+//     title: 'Customer'
+//   );
+//   createdAt @(
+//     Analytics.Dimension: true,
+//     title: 'Order Date'
+//   );
+// }
+
+// // 2. Aggregation capability — REQUIRED for CAP to advertise $apply support.
+// //    Without this Fiori treats the entity as a plain read-only list.
+// annotate OmsService.OrderSummary with @(
+//   Aggregation.ApplySupported: {
+//     $Type:           'Aggregation.ApplySupportedType',
+//     Transformations: [ 'aggregate', 'groupby', 'filter' ],
+//     GroupableProperties: [ status, customerName, createdAt ],
+//     AggregatableProperties: [
+//       { $Type: 'Aggregation.AggregatablePropertyType', Property: totalPrice },
+//       { $Type: 'Aggregation.AggregatablePropertyType', Property: orderCount }
+//     ]
+//   }
+// );
+
+// // 3. DataPoints — MUST be separate named annotations; UI.KPI references them
+// //    by path string, NOT by inline object.
+// annotate OmsService.OrderSummary with @(
+//   UI.DataPoint #TotalRevenue: {
+//     $Type: 'UI.DataPointType',
+//     Value: totalPrice,
+//     Title: 'Total Revenue'
+//   },
+//   UI.DataPoint #OrderCount: {
+//     $Type: 'UI.DataPointType',
+//     Value: orderCount,
+//     Title: 'Total Orders'
+//   }
+// );
+
+// // 4. KPI tiles — DataPoint must be a path reference, not an inline definition.
+// annotate OmsService.OrderSummary with @(
+//   UI.KPI #TotalRevenue: {
+//     $Type:            'UI.KPIType',
+//     DataPoint:        '@UI.DataPoint#TotalRevenue',
+//     SelectionVariant: {
+//       $Type:         'UI.SelectionVariantType',
+//       SelectOptions: []
+//     }
+//   },
+//   UI.KPI #OrderCount: {
+//     $Type:            'UI.KPIType',
+//     DataPoint:        '@UI.DataPoint#OrderCount',
+//     SelectionVariant: {
+//       $Type:         'UI.SelectionVariantType',
+//       SelectOptions: []
+//     }
+//   }
+// );
+
+// // 5. Chart
+// annotate OmsService.OrderSummary with @(
+//   UI.Chart #RevenueByStatus: {
+//     $Type:     'UI.ChartDefinitionType',
+//     ChartType: #Column,
+//     Title:     'Revenue by Status',
+//     Measures:  [ totalPrice ],
+//     MeasureAttributes: [{
+//       $Type:     'UI.ChartMeasureAttributeType',
+//       Measure:   totalPrice,
+//       Role:      #Axis1,
+//       DataPoint: '@UI.DataPoint#TotalRevenue'
+//     }],
+//     Dimensions: [ status ],
+//     DimensionAttributes: [{
+//       $Type:     'UI.ChartDimensionAttributeType',
+//       Dimension: status,
+//       Role:      #Category
+//     }]
+//   },
+
+//   UI.Chart #OrdersByCustomer: {
+//     $Type:     'UI.ChartDefinitionType',
+//     ChartType: #Bar,
+//     Title:     'Orders by Customer',
+//     Measures:  [ orderCount ],
+//     MeasureAttributes: [{
+//       $Type:     'UI.ChartMeasureAttributeType',
+//       Measure:   orderCount,
+//       Role:      #Axis1,
+//       DataPoint: '@UI.DataPoint#OrderCount'
+//     }],
+//     Dimensions: [ customerName ],
+//     DimensionAttributes: [{
+//       $Type:     'UI.ChartDimensionAttributeType',
+//       Dimension: customerName,
+//       Role:      #Category
+//     }]
+//   }
+// );
+
+// // 6. Selection fields
+// annotate OmsService.OrderSummary with @(
+//   UI.SelectionFields: [ status, customerName, createdAt ]
+// );
+
+// // 7. Table (drill-down list)
+// annotate OmsService.OrderSummary with @(
+//   UI.LineItem: [
+//     { $Type: 'UI.DataField', Value: customerName, Label: 'Customer'    },
+//     { $Type: 'UI.DataField', Value: createdAt,    Label: 'Order Date'  },
+//     { $Type: 'UI.DataField', Value: totalPrice,   Label: 'Revenue'     },
+//     { $Type: 'UI.DataField', Value: orderCount,   Label: 'Order Count' },
+//     { $Type: 'UI.DataField', Value: status,       Label: 'Status', Criticality: statusCriticality }
+//   ],
+//   UI.HeaderInfo: {
+//     TypeName:       'Order Summary',
+//     TypeNamePlural: 'Order Summaries',
+//     Title: { $Type: 'UI.DataField', Value: customerName }
+//   }
+// );
+
+// // 8. Presentation & SelectionPresentation variants.
+// //    The SelectionPresentationVariant is the entry point Fiori uses on an
+// //    Analytical List Page — both the chart and the table must appear here.
+// annotate OmsService.OrderSummary with @(
+//   UI.PresentationVariant: {
+//     $Type:          'UI.PresentationVariantType',
+//     Visualizations: [ '@UI.Chart#RevenueByStatus', '@UI.LineItem' ],
+//     SortOrder: [{ $Type: 'Common.SortOrderType', Property: totalPrice, Descending: true }],
+//     RequestAtLeast: [ totalPrice, orderCount, status ]
+//   },
+
+//   UI.SelectionPresentationVariant #Default: {
+//     $Type: 'UI.SelectionPresentationVariantType',
+//     Text:  'Default',
+//     SelectionVariant: {
+//       $Type:         'UI.SelectionVariantType',
+//       SelectOptions: []
+//     },
+//     PresentationVariant: {
+//       $Type:          'UI.PresentationVariantType',
+//       Visualizations: [ '@UI.Chart#RevenueByStatus', '@UI.LineItem' ],
+//       SortOrder: [{ $Type: 'Common.SortOrderType', Property: totalPrice, Descending: true }],
+//       RequestAtLeast: [ totalPrice, orderCount, status ]
+//     }
+//   }
+// );
