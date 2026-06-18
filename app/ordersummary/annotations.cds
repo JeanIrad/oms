@@ -1,0 +1,1 @@
+using OmsService as service from '../../srv/oms-service';

@@ -14,29 +14,38 @@ const {
   handleBeforeDeleteProduct,
   handleAfterReadOrderSummary,
   handleBeforeUpdateOrders,
+  handleBeforeReadProducts,
+  handleBeforeReadCustomers,
   shipOrders,
-} = require('../helpers');
+  handleBeforeUpdateProduct,
+  handleBeforeCreateCustomers,
+} = require('./helpers');
 
 module.exports = class OmsService extends cds.ApplicationService {
   async init() {
-    this.before(['CREATE', 'UPDATE'], 'Products', onlyAdmin);
+    this.before('CREATE', 'Products', onlyAdmin);
+    this.before('UPDATE', 'Products', handleBeforeUpdateProduct);
+    this.before('DELETE', 'Products', handleBeforeDeleteProduct);
+    this.before('READ', 'Products', handleBeforeReadProducts);
+
     this.before('READ', 'OrderSummary', isAuthenticated);
     this.before('DELETE', 'OrderItems', handleDeleteOrderItem);
     this.before('CREATE', 'Orders', handleBeforeCreateOrders);
     this.before('DELETE', 'Orders', onlyAdmin);
     this.before('UPDATE', 'Orders', handleBeforeUpdateOrders);
-    this.before('DELETE', 'Products', handleBeforeDeleteProduct);
+    this.before('CREATE', 'Customers', handleBeforeCreateCustomers);
+    this.before('READ', 'Customers', handleBeforeReadCustomers);
 
     this.on('confirm', 'Orders', confirmOrders);
     this.on('cancel', 'Orders', cancelOrders);
-    this.on('uploadImage', handleUploadProductImage);
     this.on('ship', 'Orders', shipOrders);
+    this.on('uploadImage', handleUploadProductImage);
 
     this.after('READ', 'Products', handleAfterReadProducts);
     this.after('READ', 'Orders', handleAfterReadOrders);
+    this.after('CREATE', 'Orders', handleAfterCreateOrders);
     this.after('READ', 'Customers', handleAfterReadCustomers);
     this.after('READ', 'OrderSummary', handleAfterReadOrderSummary);
-    this.after('CREATE', 'Orders', handleAfterCreateOrders);
 
     await super.init();
   }

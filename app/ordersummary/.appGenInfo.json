@@ -1,0 +1,28 @@
+{
+  "generationParameters": {
+    "generationDate": "Thu Jun 18 2026 09:21:27 GMT+0200 (Central Africa Time)",
+    "generatorPlatform": "Visual Studio Code",
+    "serviceType": "Local CAP",
+    "metadataFilename": "",
+    "serviceUrl": "http://localhost:4004/oms/",
+    "appName": "ordersummary",
+    "appTitle": "OrderSummary App",
+    "appDescription": "An SAP Fiori application.",
+    "appNamespace": "",
+    "ui5Theme": "sap_horizon",
+    "ui5Version": "1.149.0",
+    "enableEslint": true,
+    "enableTypeScript": false,
+    "showMockDataInfo": false,
+    "generatorVersion": "1.26.0",
+    "template": "Analytical List Page V4",
+    "generatorName": "SAP Fiori Application Generator",
+    "entityRelatedConfig": [
+      {
+        "type": "Main Entity",
+        "value": "OrderSummary"
+      }
+    ],
+    "launchText": "To launch the generated app, start your CAP project:  and navigate to the following location in your browser:\n\nhttp://localhost:4004/ordersummary/index.html"
+  }
+}

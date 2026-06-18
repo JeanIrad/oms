@@ -6,14 +6,14 @@ service OmsService @(path: '/oms') {
   reason : String(500) @title: 'Cancellation Reason' @Common.FieldControl: #Mandatory @UI.MultiLineText: true;
 }
 
-@odata.draft.enabled
+// @odata.draft.enabled
   @restrict: [
-    { grant: ['READ', 'CREATE', 'UPDATE'], to: 'authenticated-user' },
-    { grant: '*', to: 'admin' }
+    { grant: ['READ'], to: 'any' },
+    { grant: ['READ', 'CREATE', 'UPDATE', 'DELETE'], to: 'admin' }
   ]
   entity Products  as projection on oms.Products;
 
-@odata.draft.enabled
+// @odata.draft.enabled
   @restrict: [
             {grant: ['READ', 'CREATE', 'UPDATE', 'DELETE'], to: 'admin'},
             {grant: ['READ', 'CREATE', 'UPDATE'], to: 'authenticated-user', where: 'createdBy = $user'}
@@ -49,8 +49,8 @@ entity OrderSummary as select from oms.Orders {
   key ID,
   status,
   case status
-    when 'confirmed' then 3
-    when 'cancelled' then 1
+    when 'CONFIRMED' then 3
+    when 'CANCELLED' then 1
     else 2
   end                as statusCriticality : Integer,
   totalPrice,
@@ -59,6 +59,7 @@ entity OrderSummary as select from oms.Orders {
   createdBy,
   1                  as orderCount : Integer
 };
+
 @restrict: [{ grant: '*', to: 'admin' }]
 action uploadProductImage(productId: UUID,imageData: LargeString, fileName: String) returns { 
   imageUrl: String;

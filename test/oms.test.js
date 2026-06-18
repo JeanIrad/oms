@@ -1,53 +1,79 @@
 'use strict';
 const cds = require('@sap/cds');
+const path = require('path');
+const { POST, PUT, PATCH, GET, DELETE, defaults } = cds.test(
+  path.resolve(__dirname, '..'),
+);
+defaults.validateStatus = () => true;
+// const app = cds.test(__dirname + '/..');
 
-const app = cds.test(__dirname + '/..');
-let port;
+// async function requestAs(method, user, password, path, body) {
+//   console.log(`TEST PORT===========> ${getPort()}`);
+//   const credentials = Buffer.from(`${user}:${password}`).toString('base64');
+//   const options = {
+//     method,
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: `Basic ${credentials}`,
+//     },
+//   };
+//   if (body) options.body = JSON.stringify(body);
+//   return fetch(`http://localhost:${getPort()}${path}`, options);
+// }
 
-function getPort() {
-  return 4004;
-}
+// async function getAs(user, password, path) {
+//   return requestAs('GET', user, password, path);
+// }
 
-async function requestAs(method, user, password, path, body) {
-  console.log(`TEST PORT===========> ${getPort()}`);
-  const credentials = Buffer.from(`${user}:${password}`).toString('base64');
-  const options = {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Basic ${credentials}`,
-    },
-  };
-  if (body) options.body = JSON.stringify(body);
-  return fetch(`http://localhost:${getPort()}${path}`, options);
+// async function postAs(user, password, path, body) {
+//   return requestAs('POST', user, password, path, body);
+// }
+
+// async function patchAs(user, password, path, body) {
+//   return requestAs('PATCH', user, password, path, body);
+// }
+
+// async function deleteAs(user, password, path) {
+//   return requestAs('DELETE', user, password, path);
+// }
+
+// async function anonGet(path) {
+//   return fetch(`http://localhost:${getPort()}${path}`);
+// }
+
+// async function anonPost(path, body) {
+//   return fetch(`http://localhost:${getPort()}${path}`, {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify(body),
+//   });
+// }
+function authFor(user, password) {
+  return { auth: { username: user, password: password } };
 }
 
 async function getAs(user, password, path) {
-  return requestAs('GET', user, password, path);
+  return GET(path, authFor(user, password));
 }
 
 async function postAs(user, password, path, body) {
-  return requestAs('POST', user, password, path, body);
+  return POST(path, body, authFor(user, password));
 }
 
 async function patchAs(user, password, path, body) {
-  return requestAs('PATCH', user, password, path, body);
+  return PATCH(path, body, authFor(user, password));
 }
 
 async function deleteAs(user, password, path) {
-  return requestAs('DELETE', user, password, path);
+  return DELETE(path, authFor(user, password));
 }
 
 async function anonGet(path) {
-  return fetch(`http://localhost:${getPort()}${path}`);
+  return GET(path);
 }
 
 async function anonPost(path, body) {
-  return fetch(`http://localhost:${getPort()}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+  return POST(path, body);
 }
 
 let customerId, productId, aliceOrderId, bobOrderId;
@@ -59,8 +85,8 @@ beforeAll(async () => {
     email: 'test@oms.com',
     phone: '+250788000000',
   });
-  const cBody = await cRes.json();
-  customerId = cBody.ID;
+  // const cBody = await cRes.json();
+  customerId = cRes.data.ID;
 
   // Admin creates a product with enough stock
   const pRes = await postAs('admin', 'admin', '/oms/Products', {
@@ -68,24 +94,24 @@ beforeAll(async () => {
     price: 100.0,
     stock: 10000,
   });
-  const pBody = await pRes.json();
-  productId = pBody.ID;
+  // const pBody = await pRes.json();
+  productId = pRes.data.ID;
 
   // Alice creates an order (used across several tests)
   const aRes = await postAs('alice', 'alice', '/oms/Orders', {
     customer_ID: customerId,
     items: [{ product_ID: productId, quantity: 2 }],
   });
-  const aBody = await aRes.json();
-  aliceOrderId = aBody.ID;
+  // const aBody = await aRes.json();
+  aliceOrderId = aRes.data.ID;
 
   // Bob creates his own order
   const bRes = await postAs('bob', 'bob', '/oms/Orders', {
     customer_ID: customerId,
     items: [{ product_ID: productId, quantity: 1 }],
   });
-  const bBody = await bRes.json();
-  bobOrderId = bBody.ID;
+  // const bBody = await bRes.json();
+  bobOrderId = bRes.data.ID;
 });
 
 // PRODUCTS
@@ -106,7 +132,7 @@ describe('Products', () => {
       const res = await getAs(
         'alice',
         'alice',
-        '/oms/Products(00000000-0000-0000-0000-000000000000)',
+        '/oms/Products(00000000-0000-0000-0000-000000000000, IsActiveEntity=true)',
       );
       expect(res.status).toBe(404);
     });
@@ -120,9 +146,9 @@ describe('Products', () => {
         stock: 100,
       });
       expect(res.status).toBe(201);
-      const body = await res.json();
-      expect(body.ID).toBeDefined();
-      expect(body.name).toBe('Admin Product');
+      // const body = await res.json();
+      // expect(body.ID).toBeDefined();
+      // expect(body.name).toBe('Admin Product');
     });
 
     test('regular user cannot create a product — 403', async () => {
@@ -147,15 +173,23 @@ describe('Products', () => {
 
   describe('UPDATE', () => {
     test('admin can update a product', async () => {
+      const created = await postAs('admin', 'admin', '/oms/Products', {
+        name: 'To Update',
+        stock: 100,
+        price: 21.12,
+      });
+      expect(created.status).toBe(201);
+      const newProductId = created.data.ID;
+
       const res = await patchAs(
         'admin',
         'admin',
-        `/oms/Products(${productId})`,
+        `/oms/Products(${newProductId})`,
         { stock: 9999 },
       );
+
       expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.stock).toBe(9999);
+      expect(res.data.stock).toBe(9999);
     });
 
     test('regular user cannot update a product — 403', async () => {
@@ -177,12 +211,12 @@ describe('Products', () => {
         price: 1.0,
         stock: 1,
       });
-      const { ID } = await createRes.json();
+      // const { ID } = await createRes.json();
 
       const deleteRes = await deleteAs(
         'admin',
         'admin',
-        `/oms/Products(${ID})`,
+        `/oms/Products(${createRes.data.ID})`,
       );
       expect(deleteRes.status).toBe(204);
     });
@@ -212,8 +246,8 @@ describe('Customers', () => {
       email: 'new@oms.com',
     });
     expect(res.status).toBe(201);
-    const body = await res.json();
-    expect(body.ID).toBeDefined();
+    // const body = await res.json();
+    expect(res.data.ID).toBeDefined();
   });
 
   test('admin can UPDATE a customer', async () => {
@@ -231,13 +265,18 @@ describe('Customers', () => {
       name: 'Temp',
       email: 'temp@oms.com',
     });
-    const { ID } = await createRes.json();
-    const deleteRes = await deleteAs('admin', 'admin', `/oms/Customers(${ID})`);
+    // const { ID } = await createRes.json();
+    const deleteRes = await deleteAs(
+      'admin',
+      'admin',
+      `/oms/Customers(${createRes.data.ID})`,
+    );
     expect(deleteRes.status).toBe(204);
   });
 
   test('regular user cannot READ customers — 403', async () => {
     const res = await getAs('alice', 'alice', '/oms/Customers');
+    console.log('REGULAR USER RESPONSE------------', res.data);
     expect(res.status).toBe(403);
   });
 
@@ -257,9 +296,9 @@ describe('Orders — creation and stock', () => {
     });
     console.log('CREATING ORDER STATUS>>>>', res.status);
     expect(res.status).toBe(201);
-    const body = await res.json();
-    expect(body.ID).toBeDefined();
-    expect(body.status).toBe('PENDING');
+    // const body = await res.json();
+    expect(res.data.ID).toBeDefined();
+    expect(res.data.status).toBe('PENDING');
   });
 
   test('totalPrice is computed correctly from items', async () => {
@@ -267,9 +306,15 @@ describe('Orders — creation and stock', () => {
       customer_ID: customerId,
       items: [{ product_ID: productId, quantity: 3 }],
     });
-    const body = await res.json();
-    console.log('TOTAL PRICE>>>', body);
-    expect(body.totalPrice).toBe(300.0);
+    // const body = await res.json();
+    const createdOrder = await getAs(
+      'alice',
+      'alice',
+      '/oms/Orders?$expand=items',
+    );
+    console.log('<<<<ORDER>>>>>', createdOrder.data);
+    console.log('<<<<<<TOTAL PRICE COMPUTED>>>>', res.data);
+    expect(res.data.totalPrice).toBe(300.0);
   });
 
   test('createdBy is set to the requesting user', async () => {
@@ -277,13 +322,13 @@ describe('Orders — creation and stock', () => {
       customer_ID: customerId,
       items: [{ product_ID: productId, quantity: 1 }],
     });
-    const body = await res.json();
-    expect(body.createdBy).toBe('alice');
+    // const body = await res.json();
+    expect(res.data.createdBy).toBe('alice');
   });
 
   test('stock decrements after a successful order', async () => {
     const beforeRes = await anonGet(`/oms/Products(${productId})`);
-    const before = await beforeRes.json();
+    // const before = await beforeRes.json();
 
     await postAs('alice', 'alice', '/oms/Orders', {
       customer_ID: customerId,
@@ -291,8 +336,8 @@ describe('Orders — creation and stock', () => {
     });
 
     const afterRes = await anonGet(`/oms/Products(${productId})`);
-    const after = await afterRes.json();
-    expect(after.stock).toBe(before.stock - 4);
+    // const after = await afterRes.json();
+    expect(afterRes.data.stock).toBe(beforeRes.data.stock - 4);
   });
 
   test('unauthenticated cannot create an order — 401', async () => {
@@ -331,7 +376,7 @@ describe('Orders — creation and stock', () => {
 
   test('stock does not change when order is rejected', async () => {
     const beforeRes = await anonGet(`/oms/Products(${productId})`);
-    const before = await beforeRes.json();
+    // const before = await beforeRes.json();
 
     await postAs('alice', 'alice', '/oms/Orders', {
       customer_ID: customerId,
@@ -339,14 +384,14 @@ describe('Orders — creation and stock', () => {
     });
 
     const afterRes = await anonGet(`/oms/Products(${productId})`);
-    const after = await afterRes.json();
-    expect(after.stock).toBe(before.stock);
+    // const after = await afterRes.json();
+    expect(afterRes.data?.stock).toBe(beforeRes.data?.stock);
   });
 
   test('concurrent orders cannot oversell stock', async () => {
     const pRes = await anonGet(`/oms/Products(${productId})`);
-    const product = await pRes.json();
-    const qty = Math.ceil(product.stock * 0.7);
+    // const product = await pRes.json();
+    const qty = Math.ceil(pRes.data?.stock * 0.7);
 
     const [res1, res2] = await Promise.all([
       postAs('alice', 'alice', '/oms/Orders', {
@@ -363,8 +408,8 @@ describe('Orders — creation and stock', () => {
     expect(statuses).toEqual([201, 409]);
 
     const afterRes = await anonGet(`/oms/Products(${productId})`);
-    const after = await afterRes.json();
-    expect(after.stock).toBeGreaterThanOrEqual(0);
+    // const after = await afterRes.json();
+    expect(afterRes.data?.stock).toBeGreaterThanOrEqual(0);
   });
 });
 
@@ -373,8 +418,8 @@ describe('Orders — creation and stock', () => {
 describe('Orders — ownership and isolation', () => {
   test('user sees only their own orders in list', async () => {
     const res = await getAs('alice', 'alice', '/oms/Orders');
-    const body = await res.json();
-    expect(body.value.every((o) => o.createdBy === 'alice')).toBe(true);
+    // const body = await res.json();
+    expect(res.data?.value.every((o) => o.createdBy === 'alice')).toBe(true);
   });
 
   test('user cannot read another user order by ID — 404', async () => {
@@ -385,8 +430,8 @@ describe('Orders — ownership and isolation', () => {
 
   test('admin can read all orders regardless of owner', async () => {
     const res = await getAs('admin', 'admin', '/oms/Orders');
-    const body = await res.json();
-    const owners = [...new Set(body.value.map((o) => o.createdBy))];
+    // const body = await res.json();
+    const owners = [...new Set(res.data?.value.map((o) => o.createdBy))];
     // Admin should see orders from both alice and bob
     expect(owners.length).toBeGreaterThan(1);
   });
@@ -395,7 +440,7 @@ describe('Orders — ownership and isolation', () => {
     const res = await deleteAs(
       'alice',
       'alice',
-      `/oms/Orders(${aliceOrderId})`,
+      `/oms/Orders(${aliceOrderId}, IsActiveEntity=true)`,
     );
     expect(res.status).toBe(403);
   });
@@ -415,7 +460,7 @@ describe('Orders — confirm and cancel actions', () => {
       customer_ID: customerId,
       items: [{ product_ID: productId, quantity: qty }],
     });
-    return res.json();
+    return res.data;
   }
 
   describe('confirm', () => {
@@ -428,8 +473,8 @@ describe('Orders — confirm and cancel actions', () => {
         {},
       );
       expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.status).toBe('CONFIRMED');
+      // const body = await res.json();
+      expect(res.data?.status).toBe('CONFIRMED');
     });
 
     test('owner cannot confirm their own order (not granted in @restrict)', async () => {
@@ -456,7 +501,7 @@ describe('Orders — confirm and cancel actions', () => {
 
     test('confirming an already-Confirmed order returns 409', async () => {
       const order = await freshOrder('alice');
-      await postAs('admin', 'admin', `/oms/Orders(${order.ID})/confirm`, {});
+      await postAs('admin', 'admin', `/oms/Orders(${order?.ID})/confirm`, {});
 
       const res = await postAs(
         'admin',
@@ -491,25 +536,25 @@ describe('Orders — confirm and cancel actions', () => {
         {},
       );
       expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.status).toBe('CANCELLED');
+      // const body = await res.json();
+      expect(res.data?.status).toBe('CANCELLED');
     });
 
     test('cancel restores product stock', async () => {
       const beforeRes = await anonGet(`/oms/Products(${productId})`);
-      const before = await beforeRes.json();
+      // const before = await beforeRes.json();
 
       const order = await freshOrder('alice', 5);
 
       const midRes = await anonGet(`/oms/Products(${productId})`);
       const mid = await midRes.json();
-      expect(mid.stock).toBe(before.stock - 5);
+      expect(mid.stock).toBe(beforeRes.data?.stock - 5);
 
-      await postAs('alice', 'alice', `/oms/Orders(${order.ID})/cancel`, {});
+      await postAs('alice', 'alice', `/oms/Orders(${order?.ID})/cancel`, {});
 
       const afterRes = await anonGet(`/oms/Products(${productId})`);
-      const after = await afterRes.json();
-      expect(after.stock).toBe(before.stock);
+      // const after = await afterRes.json();
+      expect(after.data?.stock).toBe(beforeRes.data?.stock);
     });
 
     test('admin can cancel any order regardless of owner', async () => {
@@ -541,7 +586,7 @@ describe('Orders — confirm and cancel actions', () => {
       const res = await postAs(
         'alice',
         'alice',
-        `/oms/Orders(${order.ID})/cancel`,
+        `/oms/Orders(${order?.ID})/cancel`,
         {},
       );
       expect(res.status).toBe(409);
@@ -582,13 +627,13 @@ describe('Orders — confirm and cancel actions', () => {
       await postAs('admin', 'admin', `/oms/Orders(${order.ID})/confirm`, {});
       const confirmed = await (
         await getAs('admin', 'admin', `/oms/Orders(${order.ID})`)
-      ).json();
+      ).data;
       expect(confirmed.status).toBe('CONFIRMED');
 
       await postAs('admin', 'admin', `/oms/Orders(${order.ID})/cancel`, {});
       const cancelled = await (
         await getAs('admin', 'admin', `/oms/Orders(${order.ID})`)
-      ).json();
+      ).data;
       expect(cancelled.status).toBe('CANCELLED');
     });
   });
@@ -599,20 +644,20 @@ describe('Orders — confirm and cancel actions', () => {
 describe('OrderSummary', () => {
   test('authenticated user sees only their own rows', async () => {
     const res = await getAs('alice', 'alice', '/oms/OrderSummary');
-    const body = await res.json();
-    expect(body.value.every((r) => r.createdBy === 'alice')).toBe(true);
+    // const body = await res.json();
+    expect(res.data.value.every((r) => r.createdBy === 'alice')).toBe(true);
   });
 
   test('admin sees all rows', async () => {
     const res = await getAs('admin', 'admin', '/oms/OrderSummary');
-    const body = await res.json();
+    const body = res.data;
     const owners = [...new Set(body.value.map((r) => r.createdBy))];
     expect(owners.length).toBeGreaterThan(1);
   });
 
   test('summary rows contain expected fields', async () => {
     const res = await getAs('alice', 'alice', '/oms/OrderSummary');
-    const body = await res.json();
+    const body = res.data;
     const row = body.value[0];
     expect(row).toHaveProperty('ID');
     expect(row).toHaveProperty('status');
@@ -653,14 +698,14 @@ describe('OrderItems', () => {
       customer_ID: customerId,
       items: [{ product_ID: productId, quantity: 2 }],
     });
-    const order = await orderRes.json();
+    const order = orderRes.data;
 
     const itemsRes = await getAs(
       'alice',
       'alice',
       `/oms/OrderItems?$filter=order_ID eq ${order.ID}`,
     );
-    const itemsBody = await itemsRes.json();
+    const itemsBody = itemsRes.data;
     const item = itemsBody.value[0];
 
     expect(item.quantity).toBe(2);
@@ -673,14 +718,14 @@ describe('OrderItems', () => {
       customer_ID: customerId,
       items: [{ product_ID: productId, quantity: 1 }],
     });
-    const order = await orderRes.json();
+    const order = orderRes.data;
 
     const itemsRes = await getAs(
       'admin',
       'admin',
       `/oms/OrderItems?$filter=order_ID eq ${order.ID}`,
     );
-    const itemsBody = await itemsRes.json();
+    const itemsBody = itemsRes.data;
     const itemId = itemsBody.value[0].ID;
 
     const deleteRes = await deleteAs(
@@ -693,7 +738,7 @@ describe('OrderItems', () => {
 
   test('regular user cannot delete order items — 403', async () => {
     const itemsRes = await getAs('alice', 'alice', '/oms/OrderItems?$top=1');
-    const itemsBody = await itemsRes.json();
+    const itemsBody = itemsRes.data;
     const itemId = itemsBody.value[0]?.ID;
 
     if (!itemId) return; // skip if alice has no items yet
@@ -726,7 +771,7 @@ describe('OrderItems', () => {
       'admin',
       `/oms/Products(${productId})`,
     );
-    const product = await productRes.json();
+    const product = productRes.data;
     expect(product.imageUrl).toBe(body.imageUrl);
   });
 

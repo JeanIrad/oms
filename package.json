@@ -17,9 +17,39 @@
   "scripts": {
     "start": "cds-serve",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:coverage:open": "jest --coverage && open coverage/lcov-report/index.html",
     "watch-orders": "cds watch --open oms.orders/index.html?sap-ui-xx-viewCache=false --livereload false",
     "watch-customers": "cds watch --open oms.customers/index.html?sap-ui-xx-viewCache=false --livereload false",
-    "watch-products": "cds watch --open products/index.html?sap-ui-xx-viewCache=false --livereload false"
+    "watch-products": "cds watch --open products/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-ordersummary": "cds watch --open ordersummary/index.html?sap-ui-xx-viewCache=false --livereload false"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 30000,
+    "collectCoverage": false,
+    "collectCoverageFrom": [
+      "srv/**/*.js",
+      "!srv/**/node_modules/**",
+      "!srv/**/*.test.js",
+      "!srv/lib/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "text-summary",
+      "html",
+      "lcov"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 60,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    }
   },
   "private": true,
   "cds": {
@@ -69,6 +99,7 @@
   "sapux": [
     "app/orders",
     "app/customers",
-    "app/products"
+    "app/products",
+    "app/ordersummary"
   ]
 }

@@ -4,7 +4,6 @@ const { deleteImage } = require('./cloudinary');
 const { Customers, Products, Orders, OrderItems } = cds.entities;
 
 const statusCriticalityHelper = (rows) => {
-  console.log('ROWS>>', rows);
   const list = Array.isArray(rows) ? rows : [rows];
   list.forEach((r) => {
     r.statusCriticality =
@@ -21,6 +20,7 @@ const statusCriticalityHelper = (rows) => {
 };
 
 exports.onlyAdmin = async function (req) {
+  console.log('UPDATING...', req.params);
   if (!req.user?.is('admin')) return req.reject(403);
   req.notify('Product created successfully!');
 };
@@ -98,7 +98,7 @@ exports.confirmOrders = async function (req) {
   }
 
   await UPDATE(Orders).set({ status: 'CONFIRMED' }).where({ ID });
-  return SELECT.one(Orders).where({ ID });
+  return await SELECT.one(Orders).where({ ID });
 };
 
 exports.cancelOrders = async (req) => {
@@ -232,6 +232,7 @@ exports.handleBeforeDeleteProduct = async (req) => {
 };
 
 exports.handleAfterReadOrderSummary = (rows) => {
+  console.log('READING ORDER SUMMARY', rows);
   statusCriticalityHelper(rows);
 };
 
@@ -266,4 +267,39 @@ exports.shipOrders = async (req) => {
 
   await UPDATE('oms.Orders').set({ status: 'SHIPPED' }).where({ ID });
   return SELECT.one('oms.Orders').where({ ID });
+};
+
+exports.handleBeforeReadProducts = async function (req) {
+  console.log('req params', req.params[0]);
+};
+
+exports.handleBeforeUpdateProduct = async function (req) {
+  const path = req.path;
+};
+
+exports.handleBeforeReadCustomers = async function (req) {
+  // if (!req.user.is('admin') || !req.user.is('authenticated-user'))
+  //   return req.reject(401);
+  // if (!req.user.is('admin')) {
+  //   const customer = await SELECT.one(Customers).where({
+  //     createdBy: req.user?.id,
+  //   });
+  //   return customer ? customer : null;
+  // }
+  // if (req.user.is('admin')) {
+  //   const users = await SELECT.from(Customers);
+  //   return Array.isArray(users) && users.length > 0 ? users : null;
+  // }
+  console.log('ReQ!$#@', req.user);
+};
+
+exports.handleBeforeCreateCustomers = async function (req) {
+  const creator = req.user?.id;
+  if (!req.user?.is('admin')) {
+    const customers = await SELECT.from(Customers).where({
+      createdBy: creator,
+    });
+    if (Array.isArray(customers) && customers.length > 0)
+      req.reject(403, 'Only one customer you can create!');
+  }
 };

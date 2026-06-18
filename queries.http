@@ -4,9 +4,6 @@
 GET {{host}}/oms/Products?$orderby=ID
 Authorization: Basic admin:admin
 
-###
-PUT {{host}}/oms/Products(8e3cbbb9-be8b-4826-8b7e-0bb663ccc515)/image
-Content-Type: file.type
 
 
 
@@ -54,4 +51,10 @@ Authorization: Basic alice:alice
 }
 
 ###
-GET {{host}}/oms/$metadata
+GET {{host}}/oms/Products(9b6ad5cb-342a-4a55-a163-c3d08f478b08, IsActiveEntity=true)
+
+###
+PATCH {{host}}/oms/Products(0d72474d-65e5-4fe3-a68c-e8216ae54799, IsActiveEntity=true)
+Content-Type: application/json
+
+{ "name": "xxx"}
