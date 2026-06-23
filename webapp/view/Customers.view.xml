@@ -1,0 +1,34 @@
+<mvc:View
+    controllerName="oms.orderscustom.controller.Customers"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    <Page title="Customer Management">
+        <content>
+            <Table id="customersTable"
+                   items="{path: '/Customers'}"
+                   growing="true">
+                <headerToolbar>
+                    <OverflowToolbar>
+                        <Title text="Customers" level="H2"/>
+                    </OverflowToolbar>
+                </headerToolbar>
+                <columns>
+                    <Column><Text text="Name" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Email" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Phone" /></Column>
+                    <Column hAlign="End"><Text text="Status" /></Column>
+                </columns>
+                <items>
+                    <ColumnListItem type="Navigation" press=".onCustomerPress">
+                        <cells>
+                            <Text text="{name}" />
+                            <Text text="{email}" />
+                            <Text text="{phone}" />
+                            <ObjectStatus text="{status}" state="{= ${statusCriticality} === 1 ? 'Error' : 'Success'}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+    </Page>
+</mvc:View>

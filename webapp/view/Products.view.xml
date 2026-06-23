@@ -1,0 +1,37 @@
+<mvc:View
+    controllerName="oms.orderscustom.controller.Products"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    <Page title="Products Management">
+        <content>
+            <Table id="productsTable"
+                   items="{path: '/Products', parameters: {$select: 'ID,name,category,price,stock,stockCriticality'}}"
+                   growing="true"
+                   growingThreshold="20">
+                <headerToolbar>
+                    <OverflowToolbar>
+                        <Title text="Products" level="H2"/>
+                        <ToolbarSpacer />
+                        <SearchField width="30%" search=".onSearch"/>
+                    </OverflowToolbar>
+                </headerToolbar>
+                <columns>
+                    <Column><Text text="Product Name" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Category" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true" hAlign="End"><Text text="Price" /></Column>
+                    <Column hAlign="End"><Text text="Stock" /></Column>
+                </columns>
+                <items>
+                    <ColumnListItem type="Navigation" press=".onProductPress">
+                        <cells>
+                            <ObjectIdentifier title="{name}" text="{name}"/>
+                            <Text text="{category}" />
+                            <ObjectNumber number="{path: 'price', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}" unit="USD"/>
+                            <ObjectStatus text="{stock}" state="{= ${stockCriticality} === 1 ? 'Error' : (${stockCriticality} === 2 ? 'Warning' : 'Success') }" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+    </Page>
+</mvc:View>

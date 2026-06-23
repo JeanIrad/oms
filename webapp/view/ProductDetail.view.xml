@@ -1,0 +1,32 @@
+<mvc:View
+    controllerName="oms.orderscustom.controller.ProductDetail"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form">
+    <Page title="Product Details" showNavButton="true" navButtonPress=".onNavBack">
+        <content>
+            <ObjectHeader
+                title="{name}"
+                number="{path: 'price', type: 'sap.ui.model.type.Float'}"
+                numberUnit="USD"
+                icon="{imageUrl}">
+                <attributes>
+                    <ObjectAttribute text="Category: {category}" />
+                    <ObjectAttribute text="Product ID: {ID}" />
+                </attributes>
+                <statuses>
+                    <ObjectStatus text="Stock: {stock}" state="{= ${stockCriticality} === 1 ? 'Error' : 'Success' }" />
+                </statuses>
+            </ObjectHeader>
+
+            <f:SimpleForm title="Detailed Information" editable="false" layout="ResponsiveGridLayout">
+                <f:content>
+                    <Label text="Description" />
+                    <Text text="{description}" />
+                    <Label text="Cloud Public ID" />
+                    <Text text="{imagePublicId}" />
+                </f:content>
+            </f:SimpleForm>
+        </content>
+    </Page>
+</mvc:View>

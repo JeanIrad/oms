@@ -30,16 +30,38 @@ sap.ui.define(
           console.warn("OData model not available");
           return;
         }
-        this._loadCustomersIntoFilter();
+        // Defer until the view (including the FilterPanel fragment's
+        // controls) has fully rendered. Calling byId() for fragment
+        // content too early in onInit can return undefined.
+        this.getView().addEventDelegate({
+          onAfterRendering: function () {
+            this._loadCustomersIntoFilter();
+          }.bind(this),
+        });
       },
 
       _loadCustomersIntoFilter: function () {
         var oModel = this.getView().getModel();
         var oSelect = this.byId("filterCustomerSelect");
 
-        if (!oModel || !oSelect) {
+        if (!oModel) {
+          console.warn("_loadCustomersIntoFilter: no OData model found");
           return;
         }
+        if (!oSelect) {
+          console.warn(
+            "_loadCustomersIntoFilter: filterCustomerSelect control not found via byId(). " +
+              "Check that the FilterPanel fragment is being instantiated with the view as its owner.",
+          );
+          return;
+        }
+
+        // Avoid reloading/duplicating items if onAfterRendering fires
+        // again (e.g. navigating back to this route).
+        if (this._bCustomersLoaded) {
+          return;
+        }
+        this._bCustomersLoaded = true;
 
         var oBinding = oModel.bindList("/Customers");
         oBinding
@@ -56,10 +78,13 @@ sap.ui.define(
               );
             }.bind(this),
           )
-          .catch(function (oErr) {
-            console.warn("Failed to load customers", oErr);
-            MessageToast.show("Could not load customer list for filtering");
-          });
+          .catch(
+            function (oErr) {
+              console.warn("Failed to load customers", oErr);
+              MessageToast.show("Could not load customer list for filtering");
+              this._bCustomersLoaded = false;
+            }.bind(this),
+          );
       },
 
       onFilterChange: function () {
@@ -122,9 +147,7 @@ sap.ui.define(
             oContext.refresh();
           })
           .catch(function (oErr) {
-            MessageBox.error(
-              "Could not confirm order: " + (oErr.message || oErr),
-            );
+            MessageBox.error(oErr.message || oErr);
           });
       },
 
@@ -141,7 +164,7 @@ sap.ui.define(
             oContext.refresh();
           })
           .catch(function (oErr) {
-            MessageBox.error("Could not ship order: " + (oErr.message || oErr));
+            MessageBox.error(oErr.message || oErr);
           });
       },
 
@@ -202,9 +225,7 @@ sap.ui.define(
             oContext.refresh();
           })
           .catch(function (oErr) {
-            MessageBox.error(
-              "Could not cancel order: " + (oErr.message || oErr),
-            );
+            MessageBox.error(oErr.message || oErr);
           });
       },
     });

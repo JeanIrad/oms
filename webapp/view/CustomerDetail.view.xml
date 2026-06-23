@@ -1,0 +1,28 @@
+<mvc:View
+    controllerName="oms.orderscustom.controller.CustomerDetail"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form">
+    <Page title="Customer Profile" showNavButton="true" navButtonPress=".onNavBack">
+        <content>
+            <f:SimpleForm title="{name}" editable="false" layout="ResponsiveGridLayout">
+                <f:content>
+                    <Label text="Customer ID" />
+                    <Text text="{ID}" />
+
+                    <Label text="Email Address" />
+                    <Text text="{email}" />
+
+                    <Label text="Phone Number" />
+                    <Text text="{phone}" />
+
+                    <Label text="Delivery Address" />
+                    <Text text="{address}" />
+
+                    <Label text="Account Status" />
+                    <ObjectStatus text="{status}" state="{= ${statusCriticality} === 1 ? 'Error' : 'Success'}" />
+                </f:content>
+            </f:SimpleForm>
+        </content>
+    </Page>
+</mvc:View>

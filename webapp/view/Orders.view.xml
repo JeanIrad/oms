@@ -19,11 +19,7 @@
         id="ordersTable"
         items="{
           path: '/Orders',
-          parameters: {
-            $$updateGroupId: 'auto',
-            $select: 'ID,status,totalPrice,createdAt,customer_ID',
-            $expand: { customer: { $select: 'ID,name' } }
-          }
+          parameters: { $$updateGroupId: 'auto' }
         }"
         growing="true"
         growingThreshold="20"
@@ -46,7 +42,7 @@
             <cells>
               <Text text="{customer/name}"/>
               <Text text="{path: 'createdAt', type: 'sap.ui.model.type.DateTime', formatOptions: {style: 'medium'}}"/>
-              <Text text="{path: 'totalPrice', type: 'sap.ui.model.type.Currency', formatOptions: {showMeasure: false}} USD"/>
+              <Text text="{= sap.ui.core.format.NumberFormat.getFloatInstance({maxFractionDigits: 2, minFractionDigits: 2}).format(${totalPrice}) + ' USD' }"/>
               <ObjectStatus text="{status}" state="{= ${status} === 'CONFIRMED' ? 'Success' : ${status} === 'CANCELLED' ? 'Error' : ${status} === 'SHIPPED' ? 'Information' : 'None' }"/>
               <HBox>
                 <Button

@@ -1,0 +1,14 @@
+/* Adds a small gap between the browser chrome and the app's
+   Shell/Page header so titles and buttons don't feel cramped
+   against the very top edge of the viewport. */
+.sapMShellOuter {
+  padding-top: 0.5rem;
+  box-sizing: border-box;
+}
+
+/* Fallback in case the Shell isn't the outermost wrapper in this
+   UI5 version — applies the same spacing to the root App control. */
+#app {
+  padding-top: 0.5rem;
+  box-sizing: border-box;
+}

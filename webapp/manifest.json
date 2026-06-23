@@ -69,6 +69,26 @@
           "name": "createOrder",
           "pattern": "createOrder",
           "target": "createOrder"
+        },
+        {
+          "name": "products",
+          "pattern": "products",
+          "target": ["products"]
+        },
+        {
+          "name": "productDetail",
+          "pattern": "products/{productId}",
+          "target": ["productDetails"]
+        },
+        {
+          "name": "customers",
+          "pattern": "customers",
+          "target": ["customers"]
+        },
+        {
+          "name": "customerDetail",
+          "pattern": "customers/{customerId}",
+          "target": ["customerDetail"]
         }
       ],
       "targets": {
@@ -81,6 +101,26 @@
           "viewName": "CreateOrder",
           "viewLevel": 2,
           "viewId": "createOrder"
+        },
+        "products": {
+          "viewName": "Products",
+          "viewLevel": 1,
+          "viewId": "products"
+        },
+        "productDetails": {
+          "viewName": "ProductDetail",
+          "viewLevel": 2,
+          "viewId": "productDetail"
+        },
+        "customers": {
+          "viewName": "Customers",
+          "viewLevel": 1,
+          "viewId": "customers"
+        },
+        "customerDetail": {
+          "viewName": "CustomerDetail",
+          "viewLevel": 2,
+          "viewId": "customerDetail"
         }
       }
     },
