@@ -1,0 +1,33 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+  <Panel headerText="Filters" expandable="true" expanded="true" class="sapUiSmallMarginBottom">
+    <content>
+      <f:SimpleForm
+        xmlns:f="sap.ui.layout.form"
+        layout="ResponsiveGridLayout"
+        editable="true"
+        labelSpanXL="2" labelSpanL="2" labelSpanM="3" labelSpanS="12"
+        adjustLabelSpan="false"
+        emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+        columnsXL="3" columnsL="3" columnsM="1">
+        <f:content>
+          <Label text="From date"/>
+          <DatePicker id="filterFromDate" change="onFilterChange" valueFormat="yyyy-MM-dd" displayFormat="medium"/>
+
+          <Label text="To date"/>
+          <DatePicker id="filterToDate" change="onFilterChange" valueFormat="yyyy-MM-dd" displayFormat="medium"/>
+
+          <Label text="Customer"/>
+          <Select id="filterCustomerSelect" change="onFilterChange" autoAdjustWidth="true">
+            <core:Item key="" text="All customers"/>
+          </Select>
+        </f:content>
+      </f:SimpleForm>
+      <Toolbar>
+        <ToolbarSpacer/>
+        <Button text="Clear filters" press="onClearFilters" type="Transparent"/>
+      </Toolbar>
+    </content>
+  </Panel>
+</core:FragmentDefinition>

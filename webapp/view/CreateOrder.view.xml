@@ -1,0 +1,63 @@
+<mvc:View
+  controllerName="oms.orderscustom.controller.CreateOrder"
+  xmlns="sap.m"
+  xmlns:f="sap.ui.layout.form"
+  xmlns:mvc="sap.ui.core.mvc">
+  <Page title="Create Order" showNavButton="true" navButtonPress="onNavBack">
+    <content>
+      <f:SimpleForm
+        layout="ResponsiveGridLayout"
+        editable="true"
+        labelSpanXL="3" labelSpanL="3" labelSpanM="4" labelSpanS="12"
+        class="sapUiContentPadding">
+        <f:content>
+          <Label text="Customer" required="true"/>
+          <Select id="customerSelect" forceSelection="false" width="100%">
+            <core:Item xmlns:core="sap.ui.core" key="" text="Select a customer"/>
+          </Select>
+
+          <Label text="Notes"/>
+          <TextArea id="notesInput" rows="3" width="100%"/>
+        </f:content>
+      </f:SimpleForm>
+
+      <Toolbar class="sapUiSmallMarginTop sapUiSmallMarginBeginEnd">
+        <Title text="Order Items" level="H3"/>
+        <ToolbarSpacer/>
+        <Button text="Add Item" icon="sap-icon://add" press="onAddItem"/>
+      </Toolbar>
+
+      <Table id="itemsTable" items="{path: 'newOrder>/items'}" noDataText="No items added yet">
+        <columns>
+          <Column><Text text="Product"/></Column>
+          <Column><Text text="Quantity"/></Column>
+          <Column><Text text="Unit Price"/></Column>
+          <Column/>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Select
+                forceSelection="false"
+                selectedKey="{newOrder>productId}"
+                items="{path: 'products>/Products'}"
+                change="onItemProductChange">
+                <core:Item xmlns:core="sap.ui.core" key="{products>ID}" text="{products>name}"/>
+              </Select>
+              <StepInput value="{newOrder>quantity}" min="1" step="1"/>
+              <Input value="{newOrder>unitPrice}" type="Number"/>
+              <Button icon="sap-icon://delete" type="Transparent" press="onRemoveItem"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+    <footer>
+      <Toolbar>
+        <ToolbarSpacer/>
+        <Button text="Cancel" press="onNavBack"/>
+        <Button text="Save Order" type="Emphasized" press="onSaveOrder"/>
+      </Toolbar>
+    </footer>
+  </Page>
+</mvc:View>
