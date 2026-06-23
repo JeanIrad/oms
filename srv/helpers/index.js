@@ -27,8 +27,10 @@ exports.onlyAdmin = async function (req) {
 
 exports.handleBeforeCreateOrders = async function (req) {
   const order = req.data;
-  const items = order.items;
+  const items = order?.items;
   const { id: userId } = req.user;
+  if (order.cancellationReason.trim().length > 0)
+    req.error(400, 'Provide cancel reason only when cancelling order');
   if (!items || items.length === 0) {
     return req.reject(400, 'An order must contain at least one item.');
   }
@@ -246,6 +248,9 @@ exports.handleBeforeUpdateOrders = async (req) => {
       409,
       `Cannot update this order with status: ${order.status}.`,
     );
+  console.log('CANCELL REASON>>>', order);
+  if (order.cancellationReason?.trim()?.length > 0)
+    req.reject(400, 'Provide reason only when cancelling this order ');
   return req.notify('Order updated successfully');
 };
 
@@ -278,6 +283,10 @@ exports.handleBeforeUpdateProduct = async function (req) {
 };
 
 exports.handleBeforeReadCustomers = async function (req) {
+  if (!req.user?.is('admin'))
+    // const currentUser =  await SELECT.one(Customers).where({ createdBy: req.user?.id });
+    return req.reject(403);
+
   // if (!req.user.is('admin') || !req.user.is('authenticated-user'))
   //   return req.reject(401);
   // if (!req.user.is('admin')) {
@@ -290,7 +299,6 @@ exports.handleBeforeReadCustomers = async function (req) {
   //   const users = await SELECT.from(Customers);
   //   return Array.isArray(users) && users.length > 0 ? users : null;
   // }
-  console.log('ReQ!$#@', req.user);
 };
 
 exports.handleBeforeCreateCustomers = async function (req) {
@@ -302,4 +310,8 @@ exports.handleBeforeCreateCustomers = async function (req) {
     if (Array.isArray(customers) && customers.length > 0)
       req.reject(403, 'Only one customer you can create!');
   }
+};
+
+exports.handleBeforeReadOrders = async (req) => {
+  console.log('<<REQUEST USER>', req.user);
 };

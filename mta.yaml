@@ -1,0 +1,267 @@
+_schema-version: 3.3.0
+ID: oms
+version: 1.0.0
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+modules:
+  - name: oms-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      instances: 1
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: oms-auth
+      - name: oms-db
+
+  - name: oms-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: oms-db
+  - name: oms
+    type: approuter.nodejs
+    path: app/router
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api # must be used in xs-app.json as well
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: oms-auth
+    provides:
+      - name: app-api
+        properties:
+          app-protocol: ${protocol}
+          app-uri: ${default-uri}
+
+resources:
+  - name: oms-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: oms-${org}-${space}
+        tenant-mode: dedicated
+        oaut_schema-version: 3.3.0
+ID: oms
+version: 1.0.0
+description: "Order Management System"
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+
+modules:
+  # ── CAP backend service ──────────────────────────────────────────────────
+  - name: oms-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      instances: 1
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: oms-auth
+      - name: oms-db
+
+  # ── HDI deployer ─────────────────────────────────────────────────────────
+  - name: oms-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: oms-db
+
+  # ── Customers Fiori app ──────────────────────────────────────────────────
+  - name: oms-customers
+    type: html5
+    path: app/customers
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build
+    parameters:
+      app-name: customers
+
+  # ── Orders Fiori app ─────────────────────────────────────────────────────
+  - name: oms-orders
+    type: html5
+    path: app/orders
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build
+    parameters:
+      app-name: orders
+
+  # ── OrderSummary Fiori app ───────────────────────────────────────────────
+  - name: oms-ordersummary
+    type: html5
+    path: app/ordersummary
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build
+    parameters:
+      app-name: ordersummary
+
+  # ── Products Fiori app ───────────────────────────────────────────────────
+  - name: oms-products
+    type: html5
+    path: app/products
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install
+        - npm run build
+    parameters:
+      app-name: products
+
+  # ── Managed App Router — serves all 4 UI apps and brokers XSUAA login ───
+  - name: oms-destinations
+    type: com.sap.application.content
+    requires:
+      - name: oms-repo-host
+        parameters:
+          content-target: true
+      - name: oms-auth
+      - name: srv-api
+    parameters:
+      content:
+        instance:
+          destinations:
+            - Name: oms-srv-api
+              ServiceInstanceName: oms-html5-repo-host
+              ServiceKeyName: oms-html5-repo-host-key
+              sap.cloud.service: oms.srv
+          existing_destinations_policy: update
+    build-parameters:
+      no-source: true
+
+  # ── HTML5 app deployer — uploads built UI content to the repo ───────────
+  - name: oms-app-deployer
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: oms-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - name: oms-customers
+          artifacts:
+            - dist.zip
+          target-path: resources/
+        - name: oms-orders
+          artifacts:
+            - dist.zip
+          target-path: resources/
+        - name: oms-ordersummary
+          artifacts:
+            - dist.zip
+          target-path: resources/
+        - name: oms-products
+          artifacts:
+            - dist.zip
+          target-path: resources/
+
+resources:
+  - name: oms-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: oms-${org}-${space}
+        tenant-mode: dedicated
+        oauth2-configuration:
+          credential-types:
+            - "binding-secret"
+            - "x509"
+        role-collections:
+          - name: 'admin (oms ${org}-${space})'
+            description: 'OMS Administrator'
+            role-template-references:
+              - '$XSAPPNAME.Admin'
+          - name: 'user (oms ${org}-${space})'
+            description: 'OMS Standard User'
+            role-template-references:
+              - '$XSAPPNAME.AuthenticatedUser'
+
+  - name: oms-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+
+  # ── Managed App Router service — this is what makes it "managed" ───────
+  - name: oms-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+
+  - name: oms-portal
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: portal
+      service-plan: standardh2-configuration:
+          credential-types:
+            - "binding-secret"
+            - "x509"
+          redirect-uris:
+            - https://*~{app-api/app-uri}/**
+        role-collections:
+          - name: 'admin (oms ${org}-${space})'
+            description: 'generated'
+            role-template-references:
+              - '$XSAPPNAME.admin'
+    requires:
+      - name: app-api
+  - name: oms-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared

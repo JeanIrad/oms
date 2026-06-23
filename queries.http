@@ -58,3 +58,16 @@ PATCH {{host}}/oms/Products(0d72474d-65e5-4fe3-a68c-e8216ae54799, IsActiveEntity
 Content-Type: application/json
 
 { "name": "xxx"}
+
+###
+GET {{host}}/oms/Customers
+Authorization: Basic alice:alice
+
+###     
+POST {{host}}/oms/Customers
+Content-Type: application/json
+Authorization: Basic alice:alice
+
+
+{"name": "Jean", "phone": "+25078709334", "email": "jean@sample.com"}
+

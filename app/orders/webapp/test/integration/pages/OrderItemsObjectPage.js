@@ -15,7 +15,7 @@ sap.ui.define(['sap/fe/test/ObjectPage', 'sap/ui/test/actions/Press'], function(
 
     return new ObjectPage(
         {
-            appId: 'oms.ordermanagementsystem',
+            appId: 'oms.orders',
             componentId: 'OrderItemsObjectPage',
             contextPath: '/Orders/items'
         },

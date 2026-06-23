@@ -19,6 +19,7 @@ const {
   shipOrders,
   handleBeforeUpdateProduct,
   handleBeforeCreateCustomers,
+  handleBeforeReadOrders,
 } = require('./helpers');
 
 module.exports = class OmsService extends cds.ApplicationService {
@@ -35,6 +36,7 @@ module.exports = class OmsService extends cds.ApplicationService {
     this.before('UPDATE', 'Orders', handleBeforeUpdateOrders);
     this.before('CREATE', 'Customers', handleBeforeCreateCustomers);
     this.before('READ', 'Customers', handleBeforeReadCustomers);
+    this.before('READ', 'Orders', handleBeforeReadOrders);
 
     this.on('confirm', 'Orders', confirmOrders);
     this.on('cancel', 'Orders', cancelOrders);

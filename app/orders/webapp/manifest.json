@@ -13,7 +13,7 @@
     "sourceTemplate": {
       "id": "@sap/generator-fiori:lrop",
       "version": "1.26.0",
-      "toolsId": "fcceed2e-5207-4c5f-85f4-63565936ac0b"
+      "toolsId": "4216efbc-7718-4a2f-9dc8-3cc53c98c1b3"
     },
     "dataSources": {
       "mainService": {
@@ -106,9 +106,9 @@
           "name": "sap.fe.templates.ListReport",
           "options": {
             "settings": {
+              "initialLoad": "Enabled",
               "contextPath": "/Orders",
               "variantManagement": "Page",
-              "initialLoad": "Enabled",
               "navigation": {
                 "Orders": {
                   "detail": {
@@ -119,7 +119,27 @@
               "controlConfiguration": {
                 "@com.sap.vocabularies.UI.v1.LineItem": {
                   "tableSettings": {
-                    "type": "ResponsiveTable"
+                    "type": "ResponsiveTable",
+                    "onBeforeRebindTable": "oms.orders.ext.controller.OrdersListReportExt.onBeforeRebindTable"
+                  }
+                },
+                "@com.sap.vocabularies.UI.v1.SelectionFields": {
+                  "filterFields": {
+                    "CustomDateRange": {
+                      "label": "Date range",
+                      "property": "createdAt",
+                      "template": "oms.orders.ext.fragment.DateRangeFilter",
+                      "position": {
+                        "placement": "After",
+                        "anchor": "createdAt"
+                      }
+                    },
+                    "CustomCustomerFilter": {
+                      "label": "Customer",
+                      "property": "customer_ID",
+                      "template": "oms.orders.ext.fragment.CustomerFilter",
+                      "position": { "placement": "After", "anchor": "status" }
+                    }
                   }
                 }
               }
@@ -153,6 +173,15 @@
               "editableHeaderContent": false,
               "contextPath": "/Orders/items"
             }
+          }
+        }
+      }
+    },
+    "extends": {
+      "extensions": {
+        "sap.ui.controllerExtensions": {
+          "sap.fe.templates.ListReport.ListReportController": {
+            "controllerName": "oms.orders.ext.controller.OrdersListReportExt"
           }
         }
       }

@@ -8,7 +8,7 @@ sap.ui.define(['sap/fe/test/ListReport'], function(ListReport) {
 
     return new ListReport(
         {
-            appId: 'oms.ordermanagementsystem',
+            appId: 'oms.orders',
             componentId: 'OrdersList',
             contextPath: '/Orders'
         },

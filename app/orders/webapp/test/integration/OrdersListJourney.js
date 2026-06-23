@@ -30,10 +30,6 @@ sap.ui.define([
             Then.onTheOrdersList.iSeeThisPage();
         });
 
-        opaTest("Check filter bar", function (Given, When, Then) {
-            Then.onTheOrdersList.onFilterBar().iCheckFilterField("Status");
-            Then.onTheOrdersList.onFilterBar().iCheckFilterField("Order Date");
-        });
 
         // Note: this test will only work if the ListReport page has a search field and shows data that matches the search term. Please ensure that the test data and search term are set up accordingly.
         // opaTest("Perform a global search and check the result", function (Given, When, Then) {

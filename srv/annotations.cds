@@ -57,7 +57,7 @@ annotate OmsService.Orders with @(
     Description: { $Type: 'UI.DataField', Value: status }
   },
 
-  UI.SelectionFields: [ status, createdAt ],
+  // UI.SelectionFields: [ status, createdAt ],
 
   UI.LineItem: [
     { $Type: 'UI.DataField', Value: customer_ID,  Label: 'Customer'    },
@@ -149,6 +149,8 @@ annotate OmsService.Orders with @(
   }
 );
 
+
+
 annotate OmsService.Orders actions {
   cancel @(
     Common.IsActionCritical: true,
@@ -158,6 +160,8 @@ annotate OmsService.Orders actions {
     Core.OperationAvailable: canShip
   );
 };
+
+
 
 annotate OmsService.Orders with @(
   UI.CreateHidden: false,

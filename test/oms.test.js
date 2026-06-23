@@ -274,7 +274,7 @@ describe('Customers', () => {
     expect(deleteRes.status).toBe(204);
   });
 
-  test('regular user cannot READ customers — 403', async () => {
+  test('regular user cannot READ CUSTOMERS — 403', async () => {
     const res = await getAs('alice', 'alice', '/oms/Customers');
     console.log('REGULAR USER RESPONSE------------', res.data);
     expect(res.status).toBe(403);
@@ -306,13 +306,7 @@ describe('Orders — creation and stock', () => {
       customer_ID: customerId,
       items: [{ product_ID: productId, quantity: 3 }],
     });
-    // const body = await res.json();
-    const createdOrder = await getAs(
-      'alice',
-      'alice',
-      '/oms/Orders?$expand=items',
-    );
-    console.log('<<<<ORDER>>>>>', createdOrder.data);
+
     console.log('<<<<<<TOTAL PRICE COMPUTED>>>>', res.data);
     expect(res.data.totalPrice).toBe(300.0);
   });

@@ -1,15 +1,15 @@
 ## Application Details
 |               |
 | ------------- |
-|**Generation Date and Time**<br>Wed Jun 17 2026 12:18:30 GMT+0200 (Central Africa Time)|
+|**Generation Date and Time**<br>Mon Jun 22 2026 10:58:33 GMT+0200 (Central Africa Time)|
 |**App Generator**<br>SAP Fiori Application Generator|
 |**App Generator Version**<br>1.26.0|
 |**Generation Platform**<br>Visual Studio Code|
 |**Template Used**<br>List Report Page V4|
 |**Service Type**<br>Local CAP|
 |**Service URL**<br>http://localhost:4004/oms/|
-|**Module Name**<br>order-management-system|
-|**Application Title**<br>OMS|
+|**Module Name**<br>orders|
+|**Application Title**<br>Order System|
 |**Namespace**<br>oms|
 |**UI5 Theme**<br>sap_horizon|
 |**UI5 Version**<br>1.149.0|
@@ -18,7 +18,7 @@
 |**Main Entity**<br>Orders|
 |**Navigation Entity**<br>items|
 
-## order-management-system
+## orders
 
 An SAP Fiori application.
 
@@ -26,7 +26,7 @@ An SAP Fiori application.
 
 -   This app has been generated using the SAP Fiori tools - App Generator, as part of the SAP Fiori tools suite.  To launch the generated app, start your CAP project:  and navigate to the following location in your browser:
 
-http://localhost:4004/order-management-system/webapp/index.html
+http://localhost:4004/oms.orders/index.html
 
 #### Pre-requisites:
 

@@ -1,0 +1,30 @@
+{
+  "xsappname": "oms",
+  "tenant-mode": "dedicated",
+  "description": "Security profile for Order Management System",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.admin",
+      "description": "Full administrative access to Products, Customers, and Orders"
+    },
+    {
+      "name": "$XSAPPNAME.authenticated-user",
+      "description": "Standard authenticated access — create orders, view own data"
+    }
+  ],
+  "attributes": [],
+  "role-templates": [
+    {
+      "name": "Admin",
+      "description": "OMS Administrator",
+      "scope-references": ["$XSAPPNAME.admin", "$XSAPPNAME.authenticated-user"],
+      "attribute-references": []
+    },
+    {
+      "name": "AuthenticatedUser",
+      "description": "OMS Standard User",
+      "scope-references": ["$XSAPPNAME.authenticated-user"],
+      "attribute-references": []
+    }
+  ]
+}

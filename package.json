@@ -2,17 +2,20 @@
   "name": "oms",
   "version": "1.0.0",
   "dependencies": {
+    "@cap-js/hana": "^2",
     "@sap/cds": "^9",
     "cloudinary": "^2.10.0",
     "dotenv": "^17.4.2",
-    "multer": "^2.2.0"
+    "multer": "^2.2.0",
+    "@sap/xssec": "^4"
   },
   "devDependencies": {
     "@cap-js/cds-test": "^1.0.1",
     "@cap-js/sqlite": "^2.4",
     "@faker-js/faker": "^10.4.0",
-    "jest": "^30.4.2",
-    "cds-plugin-ui5": "^0.17.0"
+    "@sap/cds-dk": "^9",
+    "cds-plugin-ui5": "^0.17.0",
+    "jest": "^30.4.2"
   },
   "scripts": {
     "start": "cds-serve",
@@ -90,6 +93,11 @@
             }
           }
         }
+      },
+      "[production]": {
+        "auth": {
+          "kind": "xsuaa"
+        }
       }
     }
   },
@@ -100,6 +108,7 @@
     "app/orders",
     "app/customers",
     "app/products",
-    "app/ordersummary"
+    "app/ordersummary",
+    "app/orders"
   ]
 }
