@@ -3,12 +3,15 @@ sap.ui.define(
   function (Controller, History) {
     "use strict";
 
+    console.log("INITIALIZED PRODUCT DETAILS");
     return Controller.extend("oms.orderscustom.controller.ProductDetail", {
       onInit: function () {
+        console.log("Product Details controller");
         var oRouter = this.getOwnerComponent().getRouter();
         oRouter
-          .getRoute("ProductDetail")
+          .getRoute("productDetail")
           .attachPatternMatched(this._onObjectMatched, this);
+        console.log("Product Details controller");
       },
 
       _onObjectMatched: function (oEvent) {

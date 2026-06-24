@@ -135,13 +135,13 @@ sap.ui.define(
           .then(
             function () {
               MessageToast.show("Order created");
+
+              this.getOwnerComponent().getModel().refresh();
               this.getOwnerComponent().getRouter().navTo("orders");
             }.bind(this),
           )
           .catch(function (oErr) {
-            MessageBox.error(
-              "Could not create order: " + (oErr.message || oErr),
-            );
+            MessageBox.error(oErr.message || oErr);
           });
       },
 

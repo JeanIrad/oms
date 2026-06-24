@@ -1,0 +1,88 @@
+<mvc:View
+  controllerName="oms.orderscustom.controller.OrderDetail"
+  xmlns="sap.m"
+  xmlns:f="sap.ui.layout.form"
+  xmlns:mvc="sap.ui.core.mvc">
+  <Page title="Order details" showNavButton="true" navButtonPress="onNavBack">
+    <content>
+      <ObjectHeader
+        title="Order {/ID}"
+        number="{path: 'totalPrice', type: 'sap.ui.model.odata.type.Decimal', formatOptions: {decimals: 2}}"
+        numberUnit="USD">
+        <statuses>
+          <ObjectStatus
+            text="{status}"
+            state="{= ${status} === 'CONFIRMED' ? 'Success' : ${status} === 'CANCELLED' ? 'Error' : ${status} === 'SHIPPED' ? 'Information' : 'None' }"/>
+        </statuses>
+      </ObjectHeader>
+
+      <f:SimpleForm
+        layout="ResponsiveGridLayout"
+        editable="false"
+        labelSpanL="3" labelSpanM="4"
+        class="sapUiContentPadding">
+        <f:content>
+          <Label text="Customer"/>
+          <Text text="{customer/name}"/>
+
+          <Label text="Customer email"/>
+          <Text text="{customer/email}"/>
+
+          <Label text="Order date"/>
+          <Text text="{path: 'createdAt', type: 'sap.ui.model.odata.type.DateTimeOffset', formatOptions: {style: 'medium'}}"/>
+
+          <Label text="Placed by"/>
+          <Text text="{createdBy}"/>
+
+          <Label text="Notes"/>
+          <Text text="{notes}"/>
+
+          <Label text="Cancellation reason" visible="{= ${status} === 'CANCELLED' }"/>
+          <Text text="{cancellationReason}" visible="{= ${status} === 'CANCELLED' }"/>
+        </f:content>
+      </f:SimpleForm>
+
+      <Toolbar class="sapUiSmallMarginTop sapUiSmallMarginBeginEnd">
+        <Title text="Order items" level="H3"/>
+      </Toolbar>
+
+      <Table items="{items}" noDataText="No items">
+        <columns>
+          <Column><Text text="Product"/></Column>
+          <Column><Text text="Quantity"/></Column>
+          <Column><Text text="Unit price"/></Column>
+          <Column><Text text="Line total"/></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{product/name}"/>
+              <Text text="{quantity}"/>
+              <Text text="{path: 'unitPrice', type: 'sap.ui.model.odata.type.Decimal', formatOptions: {decimals: 2}}"/>
+              <Text text="{path: 'lineTotal', type: 'sap.ui.model.odata.type.Decimal', formatOptions: {decimals: 2}}"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+    <footer>
+      <Toolbar>
+        <ToolbarSpacer/>
+        <Button
+          text="Confirm"
+          type="Emphasized"
+          press="onConfirm"
+          visible="{= ${status} === 'PENDING' }"/>
+        <Button
+          text="Ship"
+          press="onShip"
+          visible="{= ${status} === 'CONFIRMED' }"/>
+        <Button
+          text="Cancel"
+          type="Reject"
+          press="onCancel"
+          visible="{= ${status} === 'PENDING' || ${status} === 'CONFIRMED' }"/>
+      </Toolbar>
+    </footer>
+  </Page>
+</mvc:View>

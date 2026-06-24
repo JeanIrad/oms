@@ -211,6 +211,15 @@ sap.ui.define(
         this.getView().addDependent(oDialog);
         oDialog.open();
       },
+      onOrderPress: function (oEvent) {
+        var oItem = oEvent.getSource();
+        var oContext = oItem.getBindingContext();
+        var sOrderId = oContext.getProperty("ID");
+        console.log("Navigating to order:", sOrderId);
+        this.getOwnerComponent()
+          .getRouter()
+          .navTo("orderDetail", { orderId: sOrderId });
+      },
 
       _executeCancel: function (oContext, sReason) {
         var sPath = oContext.getPath();

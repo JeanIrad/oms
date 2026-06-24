@@ -78,7 +78,7 @@
         {
           "name": "productDetail",
           "pattern": "products/{productId}",
-          "target": ["productDetails"]
+          "target": "productDetails"
         },
         {
           "name": "customers",
@@ -88,7 +88,17 @@
         {
           "name": "customerDetail",
           "pattern": "customers/{customerId}",
-          "target": ["customerDetail"]
+          "target": "customerDetail"
+        },
+        {
+          "pattern": "ordersummary",
+          "name": "ordersummary",
+          "target": "ordersummary"
+        },
+        {
+          "name": "orderDetail",
+          "pattern": "orders/{orderId}",
+          "target": "orderDetail"
         }
       ],
       "targets": {
@@ -107,6 +117,11 @@
           "viewLevel": 1,
           "viewId": "products"
         },
+        "orderDetail": {
+          "viewName": "OrderDetail",
+          "viewLevel": 2,
+          "viewId": "orderDetail"
+        },
         "productDetails": {
           "viewName": "ProductDetail",
           "viewLevel": 2,
@@ -121,7 +136,8 @@
           "viewName": "CustomerDetail",
           "viewLevel": 2,
           "viewId": "customerDetail"
-        }
+        },
+        "ordersummary": { "viewName": "OrderSummary", "viewLevel": 1 }
       }
     },
     "resources": {

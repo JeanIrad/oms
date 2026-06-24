@@ -12,10 +12,17 @@ sap.ui.define(
 
       onProductPress: function (oEvent) {
         var oItem = oEvent.getSource();
-        var oRouter = this.getOwnerComponent().getRouter();
-        oRouter.navTo("productDetail", {
-          productId: oItem.getBindingContext().getProperty("ID"),
-        });
+        var oContext = oItem.getBindingContext();
+        var sProductId = oContext.getProperty("ID");
+        console.log("Navigating to Product:", sProductId);
+        this.getOwnerComponent()
+          .getRouter()
+          .navTo("productDetail", { productId: sProductId });
+        // var oItem = oEvent.getSource();
+        // var oRouter = this.getOwnerComponent().getRouter();
+        // oRouter.navTo("productDetail", {
+        //   productId: oItem.getBindingContext().getProperty("ID"),
+        // });
       },
 
       onSearch: function (oEvent) {

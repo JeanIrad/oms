@@ -1,0 +1,57 @@
+<mvc:View
+  controllerName="oms.orderscustom.controller.OrderSummary"
+  xmlns="sap.m"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns:core="sap.ui.core"
+  xmlns:micro="sap.suite.ui.microchart">
+  <Page title="Order summary">
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <HBox class="sapUiSmallMarginBottom">
+          <VBox class="sapUiTinyMarginEnd" width="180px">
+            <Text text="Total revenue" class="sapUiSmallMarginBottom"/>
+            <Title id="kpiRevenue" text="—" level="H2"/>
+          </VBox>
+          <VBox width="180px">
+            <Text text="Total orders" class="sapUiSmallMarginBottom"/>
+            <Title id="kpiOrderCount" text="—" level="H2"/>
+          </VBox>
+        </HBox>
+<HBox class="sapUiSmallMarginBottom" wrap="Wrap">
+  <Panel headerText="Revenue by status" width="280px" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+    <micro:ComparisonMicroChart id="revenueByStatusChart" size="Responsive"/>
+  </Panel>
+  <Panel headerText="Revenue by customer" width="280px" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+    <micro:ComparisonMicroChart id="revenueByCustomerChart" size="Responsive"/>
+  </Panel>
+  <Panel headerText="Revenue by product" width="280px" class="sapUiTinyMarginBottom">
+    <micro:ComparisonMicroChart id="revenueByProductChart" size="Responsive"/>
+  </Panel>
+</HBox>
+
+
+
+        <Table id="summaryTable" items="{/OrderSummary}" noDataText="No order data found">
+          <columns>
+            <Column><Text text="Customer"/></Column>
+            <Column><Text text="Order date"/></Column>
+            <Column><Text text="Revenue"/></Column>
+            <Column><Text text="Status"/></Column>
+          </columns>
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Text text="{customerName}"/>
+                <Text text="{path: 'createdAt', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: {precision: 7}, formatOptions: {style: 'medium'}}"/>
+                <Text text="{path: 'totalPrice', type: 'sap.ui.model.odata.type.Decimal', formatOptions: {decimals: 2}}"/>
+                <ObjectStatus
+                  text="{status}"
+                  state="{= ${status} === 'CONFIRMED' ? 'Success' : ${status} === 'CANCELLED' ? 'Error' : 'Information' }"/>
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+      </VBox>
+    </content>
+  </Page>
+</mvc:View>

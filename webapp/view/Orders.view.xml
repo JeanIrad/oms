@@ -19,10 +19,12 @@
         id="ordersTable"
         items="{
           path: '/Orders',
-          parameters: { $$updateGroupId: 'auto' }
+          parameters: { $$updateGroupId: 'auto', $expand: 'customer' }
         }"
         growing="true"
         growingThreshold="20"
+        mode="None"
+
         noDataText="No orders found">
         <headerToolbar>
           <Toolbar>
@@ -38,11 +40,11 @@
           <Column><Text text="Actions"/></Column>
         </columns>
         <items>
-          <ColumnListItem>
+          <ColumnListItem type="Navigation" press="onOrderPress">
             <cells>
               <Text text="{customer/name}"/>
-              <Text text="{path: 'createdAt', type: 'sap.ui.model.type.DateTime', formatOptions: {style: 'medium'}}"/>
-              <Text text="{= sap.ui.core.format.NumberFormat.getFloatInstance({maxFractionDigits: 2, minFractionDigits: 2}).format(${totalPrice}) + ' USD' }"/>
+                <Text text="{path: 'createdAt', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: {precision: 7}, formatOptions: {style: 'medium'}}"/>
+              <Text text="{path: 'totalPrice', type: 'sap.ui.model.odata.type.Decimal', formatOptions: {decimals: 2}}"/>
               <ObjectStatus text="{status}" state="{= ${status} === 'CONFIRMED' ? 'Success' : ${status} === 'CANCELLED' ? 'Error' : ${status} === 'SHIPPED' ? 'Information' : 'None' }"/>
               <HBox>
                 <Button
