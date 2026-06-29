@@ -1,7 +1,7 @@
 {
   "_version": "1.85.0",
   "sap.app": {
-    "id": "ordersummary",
+    "id": "oms.ordersummary",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
@@ -13,7 +13,7 @@
     "sourceTemplate": {
       "id": "@sap/generator-fiori:alp",
       "version": "1.26.0",
-      "toolsId": "687cea2d-bdde-43c9-b36a-24ee307206b1"
+      "toolsId": "8b27ee61-b596-484e-8337-a965919276fb"
     },
     "dataSources": {
       "mainService": {
@@ -60,7 +60,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "ordersummary.i18n.i18n"
+          "bundleName": "oms.ordersummary.i18n.i18n"
         }
       },
       "": {
@@ -98,13 +98,11 @@
         "OrderSummaryList": {
           "type": "Component",
           "id": "OrderSummaryList",
-          "name": "sap.fe.templates.AnalyticalListPage",
+          "name": "sap.fe.templates.ListReport",
           "options": {
             "settings": {
               "contextPath": "/OrderSummary",
-              "variantManagement": "None",
-              "defaultTemplateAnnotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#Default",
-              "initialLoad": "Enabled",
+              "variantManagement": "Page",
               "navigation": {
                 "OrderSummary": {
                   "detail": {
@@ -116,9 +114,26 @@
                 "@com.sap.vocabularies.UI.v1.LineItem": {
                   "tableSettings": {
                     "type": "AnalyticalTable",
-                    "selectionMode": "None"
+                    "selectionMode": "Auto"
                   }
                 }
+              },
+              "views": {
+                "paths": [
+                  {
+                    "primary": [
+                      {
+                        "annotationPath": "com.sap.vocabularies.UI.v1.PresentationVariant"
+                      }
+                    ],
+                    "secondary": [
+                      {
+                        "annotationPath": "com.sap.vocabularies.UI.v1.LineItem"
+                      }
+                    ],
+                    "defaultPath": "both"
+                  }
+                ]
               }
             }
           }

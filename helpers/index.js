@@ -1,5 +1,18 @@
 const cds = require('@sap/cds');
 const { deleteImage } = require('./cloudinary');
+const {
+  createProductSchema,
+  updateProductSchema,
+} = require('../validations/product.schema');
+const {
+  validateWith,
+  reportZodErrors,
+} = require('../validations/cap-zod-bridge');
+const { createCustomerSchema } = require('../validations/customer.schema');
+const {
+  updateOrderSchema,
+  createOrderSchema,
+} = require('../validations/order.schema');
 
 const { Customers, Products, Orders, OrderItems } = cds.entities;
 
@@ -26,10 +39,11 @@ exports.onlyAdmin = async function (req) {
 };
 
 exports.handleBeforeCreateOrders = async function (req) {
+  validateWith(createOrderSchema)(req);
   const order = req.data;
   const items = order?.items;
   const { id: userId } = req.user;
-  if (order.cancellationReason.trim().length > 0)
+  if (order?.cancellationReason?.trim().length > 0)
     req.error(400, 'Provide cancel reason only when cancelling order');
   if (!items || items.length === 0) {
     return req.reject(400, 'An order must contain at least one item.');
@@ -239,6 +253,7 @@ exports.handleAfterReadOrderSummary = (rows) => {
 };
 
 exports.handleBeforeUpdateOrders = async (req) => {
+  validateWith(updateOrderSchema)(req);
   const { ID } = req.params[0];
 
   const order = await SELECT.one(Orders).where({ ID });
@@ -279,7 +294,7 @@ exports.handleBeforeReadProducts = async function (req) {
 };
 
 exports.handleBeforeUpdateProduct = async function (req) {
-  const path = req.path;
+  validateWith(updateProductSchema)(req);
 };
 
 exports.handleBeforeReadCustomers = async function (req) {
@@ -302,16 +317,33 @@ exports.handleBeforeReadCustomers = async function (req) {
 };
 
 exports.handleBeforeCreateCustomers = async function (req) {
+  const results = createCustomerSchema.safeParse(req.data);
+  if (!results.success) {
+    reportZodErrors(req, results.error);
+    return req.reject();
+  }
   const creator = req.user?.id;
   if (!req.user?.is('admin')) {
     const customers = await SELECT.from(Customers).where({
       createdBy: creator,
     });
+
     if (Array.isArray(customers) && customers.length > 0)
       req.reject(403, 'Only one customer you can create!');
   }
 };
 
 exports.handleBeforeReadOrders = async (req) => {
-  console.log('<<REQUEST USER>', req.user);
+  // console.log('reqURI|||', JSON.stringify(req.query, null, 2));
+  console.log('<<REQUEST USER>');
+};
+
+exports.handleBeforeCreateProduct = async (req) => {
+  if (!req.user.is('admin')) req.reject(403);
+  const result = createProductSchema.safeParse(req.data);
+
+  if (!result.success) {
+    reportZodErrors(req, result.error);
+    return req.reject();
+  }
 };

@@ -1,7 +1,0 @@
-<!-- DateRangeFilter.fragment.xml -->
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
-  <HBox>
-    <DatePicker id="customDateFrom" valueFormat="yyyy-MM-dd" placeholder="From"/>
-    <DatePicker id="customDateTo" valueFormat="yyyy-MM-dd" placeholder="To" class="sapUiTinyMarginBegin"/>
-  </HBox>
-</core:FragmentDefinition>

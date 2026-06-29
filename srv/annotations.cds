@@ -1,6 +1,8 @@
 using OmsService from '../srv/oms-service';
 
-
+annotate OmsService.Customers with @PersonalData(
+  
+);
 
 annotate OmsService.Orders with {
   ID         @title: 'Order ID'       @Core.Computed: true @UI.Hidden: true;
@@ -18,6 +20,10 @@ annotate OmsService.Orders with {
     title: 'Customer',
     Common.Text: customer.name,
     Common.TextArrangement: #TextOnly,
+     Common.FilterExpressionRestrictions: [{
+      Property: name,
+      AllowedExpressions: 'SearchExpression'
+    }],
     Common.ValueList: {
       $Type:          'Common.ValueListType',
       CollectionPath: 'Customers',
@@ -43,10 +49,17 @@ annotate OmsService.Orders with {
     }
   );
 
-  // customer_ID: hidden from display, but writable (no @Core.Computed, no @ReadOnly)
-  // so the value-help out-parameter can populate it.
 }
 
+
+annotate OmsService.Orders with @(
+  Capabilities.FilterRestrictions: {
+    FilterExpressionRestrictions: [{
+      Property: createdAt,
+      AllowedExpressions: 'SingleInterval'
+    }]
+  }
+);
 
 annotate OmsService.Orders with @(
 
@@ -57,7 +70,7 @@ annotate OmsService.Orders with @(
     Description: { $Type: 'UI.DataField', Value: status }
   },
 
-  // UI.SelectionFields: [ status, createdAt ],
+  UI.SelectionFields: [ status, createdAt, customer_ID ],
 
   UI.LineItem: [
     { $Type: 'UI.DataField', Value: customer_ID,  Label: 'Customer'    },

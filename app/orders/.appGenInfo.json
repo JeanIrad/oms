@@ -1,12 +1,12 @@
 {
   "generationParameters": {
-    "generationDate": "Mon Jun 22 2026 10:58:33 GMT+0200 (Central Africa Time)",
+    "generationDate": "Mon Jun 29 2026 09:21:09 GMT+0200 (Central Africa Time)",
     "generatorPlatform": "Visual Studio Code",
     "serviceType": "Local CAP",
     "metadataFilename": "",
     "serviceUrl": "http://localhost:4004/oms/",
     "appName": "orders",
-    "appTitle": "Order System",
+    "appTitle": "Orders",
     "appDescription": "An SAP Fiori application.",
     "appNamespace": "oms",
     "ui5Theme": "sap_horizon",

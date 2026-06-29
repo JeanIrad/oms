@@ -13,7 +13,7 @@
     "sourceTemplate": {
       "id": "@sap/generator-fiori:lrop",
       "version": "1.26.0",
-      "toolsId": "4216efbc-7718-4a2f-9dc8-3cc53c98c1b3"
+      "toolsId": "a823e330-4e33-4177-b261-e1ee7c5f2288"
     },
     "dataSources": {
       "mainService": {
@@ -106,7 +106,6 @@
           "name": "sap.fe.templates.ListReport",
           "options": {
             "settings": {
-              "initialLoad": "Enabled",
               "contextPath": "/Orders",
               "variantManagement": "Page",
               "navigation": {
@@ -119,27 +118,7 @@
               "controlConfiguration": {
                 "@com.sap.vocabularies.UI.v1.LineItem": {
                   "tableSettings": {
-                    "type": "ResponsiveTable",
-                    "onBeforeRebindTable": "oms.orders.ext.controller.OrdersListReportExt.onBeforeRebindTable"
-                  }
-                },
-                "@com.sap.vocabularies.UI.v1.SelectionFields": {
-                  "filterFields": {
-                    "CustomDateRange": {
-                      "label": "Date range",
-                      "property": "createdAt",
-                      "template": "oms.orders.ext.fragment.DateRangeFilter",
-                      "position": {
-                        "placement": "After",
-                        "anchor": "createdAt"
-                      }
-                    },
-                    "CustomCustomerFilter": {
-                      "label": "Customer",
-                      "property": "customer_ID",
-                      "template": "oms.orders.ext.fragment.CustomerFilter",
-                      "position": { "placement": "After", "anchor": "status" }
-                    }
+                    "type": "ResponsiveTable"
                   }
                 }
               }
@@ -177,11 +156,12 @@
         }
       }
     },
+
     "extends": {
       "extensions": {
         "sap.ui.controllerExtensions": {
           "sap.fe.templates.ListReport.ListReportController": {
-            "controllerName": "oms.orders.ext.controller.OrdersListReportExt"
+            "controllerName": "oms.orders.ext.controller.FilterExtension"
           }
         }
       }

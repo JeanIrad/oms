@@ -20,11 +20,12 @@ const {
   handleBeforeUpdateProduct,
   handleBeforeCreateCustomers,
   handleBeforeReadOrders,
-} = require('./helpers');
+  handleBeforeCreateProduct,
+} = require('../helpers');
 
 module.exports = class OmsService extends cds.ApplicationService {
   async init() {
-    this.before('CREATE', 'Products', onlyAdmin);
+    this.before('CREATE', 'Products', handleBeforeCreateProduct);
     this.before('UPDATE', 'Products', handleBeforeUpdateProduct);
     this.before('DELETE', 'Products', handleBeforeDeleteProduct);
     this.before('READ', 'Products', handleBeforeReadProducts);

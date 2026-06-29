@@ -1,0 +1,16 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:unified="sap.ui.unified"
+  xmlns:core="sap.ui.core">
+  <HBox alignItems="Center" class="sapUiSmallMarginTop">
+    <Label text="Order Date:" class="sapUiSmallMarginEnd"/>
+    <DateRangeSelection
+      id="OrderDateRangePicker"
+      displayFormat="MMM d, yyyy"
+      valueFormat="yyyy-MM-dd"
+      placeholder="From – To"
+      width="20rem"
+      change=".onDateRangeChange"
+    />
+  </HBox>
+</core:FragmentDefinition>

@@ -1,7 +1,7 @@
 ## Application Details
 |               |
 | ------------- |
-|**Generation Date and Time**<br>Wed Jun 17 2026 13:05:08 GMT+0200 (Central Africa Time)|
+|**Generation Date and Time**<br>Mon Jun 29 2026 09:34:54 GMT+0200 (Central Africa Time)|
 |**App Generator**<br>SAP Fiori Application Generator|
 |**App Generator Version**<br>1.26.0|
 |**Generation Platform**<br>Visual Studio Code|
@@ -9,7 +9,7 @@
 |**Service Type**<br>Local CAP|
 |**Service URL**<br>http://localhost:4004/oms/|
 |**Module Name**<br>customers|
-|**Application Title**<br>Customer Service|
+|**Application Title**<br>Customers|
 |**Namespace**<br>oms|
 |**UI5 Theme**<br>sap_horizon|
 |**UI5 Version**<br>1.149.0|

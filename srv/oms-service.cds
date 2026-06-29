@@ -20,7 +20,9 @@ service OmsService @(path: '/oms') {
   ]
   entity Customers as projection on oms.Customers;
 
-  @odata.draft.enabled
+@readonly
+entity Categories as projection on oms.Categories;
+  // @odata.draft.enabled
   @cds.redirection.target
   @restrict: [{grant: '*', to: 'admin'}, {grant: ['CREATE', 'READ', 'cancel'], to: 'authenticated-user', where: 'createdBy = $user'}]
   entity Orders as projection on oms.Orders actions {

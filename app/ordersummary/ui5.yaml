@@ -2,7 +2,7 @@
 
 specVersion: "4.0"
 metadata:
-  name: ordersummary
+  name: oms.ordersummary
 type: application
 server:
   customMiddleware:

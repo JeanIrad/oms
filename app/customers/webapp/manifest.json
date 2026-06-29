@@ -13,7 +13,7 @@
     "sourceTemplate": {
       "id": "@sap/generator-fiori:lrop",
       "version": "1.26.0",
-      "toolsId": "7abb1fa1-4c2e-4c17-ab58-9be7eab6689e"
+      "toolsId": "1f7f1964-6206-49a6-a297-a1c2f4c2a002"
     },
     "dataSources": {
       "mainService": {
@@ -102,9 +102,7 @@
           "options": {
             "settings": {
               "contextPath": "/Customers",
-              "initialLoad": "Enabled",
               "variantManagement": "Page",
-              "creationMode": "Sync",
               "navigation": {
                 "Customers": {
                   "detail": {
@@ -128,6 +126,7 @@
           "name": "sap.fe.templates.ObjectPage",
           "options": {
             "settings": {
+              "editableHeaderContent": false,
               "contextPath": "/Customers"
             }
           }
